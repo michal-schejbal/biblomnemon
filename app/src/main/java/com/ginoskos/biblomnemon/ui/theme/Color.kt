@@ -2,15 +2,18 @@ package com.ginoskos.biblomnemon.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Background = Color(0xFFF7F6F1)
+//0xFFF5F5DC
+val Background = Color(0xFFFFFAF0)
 val Surface = Color(0xFFFFFFFF)
 
 val PrimaryText = Color(0xFF404040)
 val SecondaryText = Color(0xFF868686)
 
+enum class BeigeBackground(val color: Color) {
+    Light(Color(0xFFFFFAF0)),
+    Dark(Color(0xFF505050))
+}
 val ChipBackground = Color(0xFFF7931E)
-val IconBackground = Color(0xFFF1F2ED)
-val CardBackground = Color(0xFFF1F2ED)
 
 val Divider = Color(0xFFE6E6E6)
 

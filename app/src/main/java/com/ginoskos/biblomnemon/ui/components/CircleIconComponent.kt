@@ -1,6 +1,7 @@
 package com.ginoskos.biblomnemon.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -14,25 +15,38 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.ginoskos.biblomnemon.ui.theme.IconBackground
+import com.ginoskos.biblomnemon.ui.theme.BeigeBackground
+
+internal object CircleIconComponentDefaults {
+    @Composable
+    fun background(): Color =
+        if (isSystemInDarkTheme()) {
+            BeigeBackground.Dark.color
+        } else {
+            BeigeBackground.Light.color
+        }
+}
 
 @Composable
-fun CircleIcon(
+fun CircleIconComponent(
     icon: ImageVector,
-    background: Color = IconBackground,
+    background: Color? = null,
     tint: Color = MaterialTheme.colorScheme.primary,
-    size: Dp = 40.dp
+    size: Dp = 40.dp,
+    contentDescription: String? = null
 ) {
+    val bg = background ?: CircleIconComponentDefaults.background()
+
     Box(
         modifier = Modifier
             .size(size)
             .clip(CircleShape)
-            .background(background),
+            .background(bg),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = null,
+            contentDescription = contentDescription,
             tint = tint
         )
     }

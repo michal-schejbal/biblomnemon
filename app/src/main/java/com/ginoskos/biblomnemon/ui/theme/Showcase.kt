@@ -1,4 +1,4 @@
-package com.ginoskos.biblomnemon.ui
+package com.ginoskos.biblomnemon.ui.theme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -12,8 +12,6 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
@@ -34,10 +32,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.ginoskos.biblomnemon.ui.components.CircleIcon
-import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
-import com.ginoskos.biblomnemon.ui.theme.CardBackground
-import com.ginoskos.biblomnemon.ui.theme.ChipBackground
+import com.ginoskos.biblomnemon.ui.components.CardComponent
+import com.ginoskos.biblomnemon.ui.components.CircleIconComponent
 
 @Composable
 fun ThemeShowcase(darkTheme: Boolean) {
@@ -82,10 +78,7 @@ fun ThemeShowcase(darkTheme: Boolean) {
 
                 HorizontalDivider()
 
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = CardBackground)
-                ) {
+                CardComponent(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             "Recent Activity",
@@ -131,7 +124,7 @@ fun ThemeShowcase(darkTheme: Boolean) {
                 )
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    CircleIcon(icon = Icons.Default.Favorite)
+                    CircleIconComponent(icon = Icons.Default.Favorite)
                     Text(
                         "Mark as Favorite",
                         modifier = Modifier.padding(start = 8.dp),
