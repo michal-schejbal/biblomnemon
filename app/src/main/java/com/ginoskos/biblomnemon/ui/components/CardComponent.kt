@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 import com.ginoskos.biblomnemon.ui.theme.BeigeBackground
 
 
-internal object CardComponentDefaults {
+private object CardComponentDefaults {
     @Composable
     fun background(): Color =
         if (isSystemInDarkTheme()) {

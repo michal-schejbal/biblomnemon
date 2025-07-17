@@ -1,4 +1,4 @@
-package com.ginoskos.biblomnemon.ui
+package com.ginoskos.biblomnemon.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -13,9 +13,14 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
+import com.ginoskos.biblomnemon.R
 import com.ginoskos.biblomnemon.ui.components.CircleIconComponent
+import com.ginoskos.biblomnemon.ui.screens.search.SearchScreen
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 import com.ginoskos.biblomnemon.ui.theme.Surface
 
@@ -23,10 +28,8 @@ import com.ginoskos.biblomnemon.ui.theme.Surface
 @Composable
 fun TopNavigation(
     modifier: Modifier = Modifier,
-    title: String,
-    onProfileClick: () -> Unit = {},
-    onAddClick: () -> Unit = {},
-    onSearchClick: () -> Unit = {}
+    navController: NavHostController,
+    title: String
 ) {
     TopAppBar(
         title = {
@@ -36,7 +39,9 @@ fun TopNavigation(
             )
         },
         actions = {
-            IconButton(onClick = onSearchClick) {
+            IconButton(onClick = {
+                navController.navigate(SearchScreen.Identifier)
+            }) {
                 CircleIconComponent(
                     icon = Icons.Default.Search,
                     background = Surface,
@@ -44,7 +49,7 @@ fun TopNavigation(
                     contentDescription = "Search"
                 )
             }
-            IconButton(onClick = onAddClick) {
+            IconButton(onClick = { }) {
                 CircleIconComponent(
                     icon = Icons.Default.Add,
                     background = Surface,
@@ -52,7 +57,7 @@ fun TopNavigation(
                     contentDescription = "Add"
                 )
             }
-            IconButton(onClick = onProfileClick) {
+            IconButton(onClick = { }) {
                 CircleIconComponent(
                     icon = Icons.Default.AccountCircle,
                     background = Surface,
@@ -72,7 +77,8 @@ fun TopNavigation(
 @Preview
 @Composable
 private fun TopNavigationPreview() {
+    val navController = rememberNavController()
     BiblomnemonTheme {
-        TopNavigation(title = "Biblomnēmon")
+        TopNavigation(navController = navController, title = stringResource(id = R.string.app_name))
     }
 }

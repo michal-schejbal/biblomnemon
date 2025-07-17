@@ -16,10 +16,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.ginoskos.biblomnemon.ui.BottomNavItem
-import com.ginoskos.biblomnemon.ui.BottomNavigation
-import com.ginoskos.biblomnemon.ui.TopNavigation
-import com.ginoskos.biblomnemon.ui.search.SearchScreen
+import androidx.navigation.compose.rememberNavController
+import com.ginoskos.biblomnemon.ui.navigation.BottomNavigation
+import com.ginoskos.biblomnemon.ui.navigation.NavigationGraph
+import com.ginoskos.biblomnemon.ui.navigation.NavigationItems
+import com.ginoskos.biblomnemon.ui.navigation.TopNavigation
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 
 class MainActivity : ComponentActivity() {
@@ -27,8 +28,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val appTitle by remember { mutableStateOf(getString(R.string.app_name)) }
-            var selectedTab by remember { mutableStateOf<BottomNavItem>(BottomNavItem.Search) }
+            val navController = rememberNavController()
+            var appTitle by remember { mutableStateOf(getString(R.string.app_name)) }
+            var selectedTab by remember { mutableStateOf(NavigationItems.Home) }
 
             BiblomnemonTheme {
                 Scaffold(
@@ -36,14 +38,13 @@ class MainActivity : ComponentActivity() {
                     containerColor = MaterialTheme.colorScheme.background,
                     topBar = {
                         TopNavigation(
-                            title = appTitle,
-                            onProfileClick = {  },
-                            onAddClick = {  },
-                            onSearchClick  = {  }
+                            navController = navController,
+                            title = appTitle
                         )
                     },
                     bottomBar = {
                         BottomNavigation(
+                            navController = navController,
                             selected = selectedTab,
                             onSelect = { selectedTab = it }
                         )
@@ -57,8 +58,11 @@ class MainActivity : ComponentActivity() {
                         shadowElevation = 10.dp,
                         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
                     ) {
-                        SearchScreen(
-                            onClick = {}
+                        NavigationGraph(
+                            navController = navController,
+                            setTopBar = { title ->
+                                appTitle = title
+                            }
                         )
                     }
                 }

@@ -1,4 +1,4 @@
-package com.ginoskos.biblomnemon.ui.search
+package com.ginoskos.biblomnemon.ui.screens.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

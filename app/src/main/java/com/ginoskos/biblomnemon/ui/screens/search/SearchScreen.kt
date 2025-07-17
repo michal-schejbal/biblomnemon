@@ -1,4 +1,4 @@
-package com.ginoskos.biblomnemon.ui.search
+package com.ginoskos.biblomnemon.ui.screens.search
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -19,31 +19,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.example.nbaplayers.ui.components.ErrorComponent
 import com.example.nbaplayers.ui.components.LoadingComponent
 import com.ginoskos.biblomnemon.repositories.books.Book
 import com.ginoskos.biblomnemon.ui.components.CardComponent
+import com.ginoskos.biblomnemon.ui.screens.IScreen
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
+import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
 
-class SearchScreen {
-}
+object SearchScreen : IScreen {
+    @Serializable object Identifier
+    override val identifier: Any
+        get() = Identifier
 
-@Composable
-fun SearchScreen(
-    modifier: Modifier = Modifier,
-    model: SearchViewModel = koinViewModel(),
-    onClick: (Book) -> Unit
-) {
-    val uiState by model.uiState.collectAsStateWithLifecycle()
+    override fun register(builder: NavGraphBuilder, navController: NavController) {
+        builder.composable<Identifier> {
+            val args = it.toRoute<Identifier>()
+            Content(
+                navController = navController
+            )
+        }
+    }
 
-    SearchScreenContent(
-        modifier = modifier,
-        uiState = uiState,
-        onClick = onClick,
-        onQueryChange = model::onQueryChange,
-        onClear = model::onClearQuery
-    )
+    @Composable
+    override fun Content(navController: NavController) {
+        val model: SearchViewModel = koinViewModel()
+        val uiState by model.uiState.collectAsStateWithLifecycle()
+
+        SearchScreenContent(
+            modifier = Modifier,
+            uiState = uiState,
+//            onClick = onClick,
+            onQueryChange = model::onQueryChange,
+            onClear = model::onClearQuery
+        )
+    }
 }
 
 @Composable

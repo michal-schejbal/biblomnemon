@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.ginoskos.biblomnemon.ui.theme.BeigeBackground
 
-internal object CircleIconComponentDefaults {
+private object CircleIconComponentDefaults {
     @Composable
     fun background(): Color =
         if (isSystemInDarkTheme()) {

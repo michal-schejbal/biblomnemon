@@ -1,7 +1,7 @@
 package com.ginoskos.biblomnemon
 
 import android.app.Application
-import com.ginoskos.biblomnemon.app.Modules
+import com.ginoskos.biblomnemon.core.app.Modules
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 
