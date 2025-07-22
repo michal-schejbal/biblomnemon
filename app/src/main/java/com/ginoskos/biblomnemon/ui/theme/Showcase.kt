@@ -137,13 +137,13 @@ fun ThemeShowcase(darkTheme: Boolean) {
 }
 
 
-@Preview(name = "Light Mode")
+@Preview(name = "Light Mode", showSystemUi = true)
 @Composable
 fun LightPreview() {
     ThemeShowcase(darkTheme = false)
 }
 
-@Preview(name = "Dark Mode")
+@Preview(name = "Dark Mode", showSystemUi = true)
 @Composable
 fun DarkPreview() {
     ThemeShowcase(darkTheme = true)

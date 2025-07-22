@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import com.ginoskos.biblomnemon.core.app.NavigationItems
 import com.ginoskos.biblomnemon.ui.screens.home.HomeScreen
 
 private val screens = NavigationItems.entries.map { it.screen }

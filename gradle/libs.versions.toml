@@ -7,7 +7,7 @@ kotlin = "2.2.0"
 coreKtx = "1.16.0"
 lifecycleRuntimeKtx = "2.9.2"
 activityCompose = "1.10.1"
-composeBom = "2025.06.01"
+composeBom = "2025.07.00"
 composeNavigation = "2.9.2"
 
 # DI / Logging
@@ -16,6 +16,11 @@ timber = "5.0.1"
 
 # KotlinX
 serialization = "1.9.0"
+
+# Networking
+retrofit = "3.0.0"
+moshi = "1.15.0"
+okhttpLogging = "5.1.0"
 
 # Testing
 junit = "4.13.2"
@@ -50,6 +55,12 @@ timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 # KotlinX
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+
+# Networking
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+retrofit-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "retrofit" }
+moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
+okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttpLogging" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

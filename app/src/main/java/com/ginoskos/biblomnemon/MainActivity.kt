@@ -17,9 +17,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
+import com.ginoskos.biblomnemon.core.app.NavigationItems
 import com.ginoskos.biblomnemon.ui.navigation.BottomNavigation
 import com.ginoskos.biblomnemon.ui.navigation.NavigationGraph
-import com.ginoskos.biblomnemon.ui.navigation.NavigationItems
 import com.ginoskos.biblomnemon.ui.navigation.TopNavigation
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 

@@ -1,4 +1,4 @@
-package com.ginoskos.biblomnemon.ui.navigation
+package com.ginoskos.biblomnemon.core.app
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons

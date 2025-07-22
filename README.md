@@ -43,7 +43,7 @@ The app is built using **Kotlin**, **Jetpack Compose**, and follows modern archi
 ## 🚧 Roadmap
 
 - [x] Initial Jetpack Compose UI setup
-- [ ] Remote API integration for book services
+- [x] Remote API integration for book services
 - [ ] Reading session tracking
 - [ ] User authentication
 - [ ] QR code profile sharing and scanning

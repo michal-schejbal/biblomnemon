@@ -12,6 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.ginoskos.biblomnemon.core.app.NavigationItems
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 
 private val bottomNavigationItems = listOf(

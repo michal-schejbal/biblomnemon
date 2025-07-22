@@ -42,6 +42,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -70,6 +71,12 @@ dependencies {
 
     // KotlinX Serialization
     implementation(libs.kotlinx.serialization.json)
+
+    // Networking
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.moshi)
+    implementation(libs.moshi.kotlin)
+    debugImplementation(libs.okhttp.logging.interceptor)
 
     // Testing
     testImplementation(libs.junit)

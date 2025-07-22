@@ -1,12 +1,16 @@
 package com.ginoskos.biblomnemon.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.ginoskos.biblomnemon.ui.theme.BeigeBackground
 
 
@@ -29,10 +33,24 @@ fun CardComponent(
     val bg = background ?: CardComponentDefaults.background()
 
     Card(
-        modifier = modifier
-            .background(bg),
+        modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = bg)
     ) {
         content()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CardComponentPreview() {
+    CardComponent(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+    ) {
+        Text(
+            text = "CardComponent",
+            modifier = Modifier.padding(16.dp)
+        )
     }
 }
