@@ -4,15 +4,24 @@ import com.example.nbaplayers.app.logger.ILogger
 import com.example.nbaplayers.app.logger.TimberLogger
 import com.example.nbaplayers.model.AppDispatcherProvider
 import com.example.nbaplayers.model.IDispatcherProvider
-import com.ginoskos.biblomnemon.repositories.books.BooksRepository
-import com.ginoskos.biblomnemon.repositories.books.IBooksRepository
-import com.ginoskos.biblomnemon.repositories.books.storage.remote.ApiFactory
-import com.ginoskos.biblomnemon.repositories.books.storage.remote.IBooksRemoteSource
-import com.ginoskos.biblomnemon.repositories.books.storage.remote.google.GoogleBooksApi
-import com.ginoskos.biblomnemon.repositories.books.storage.remote.google.GoogleBooksSource
-import com.ginoskos.biblomnemon.repositories.books.storage.remote.openlibrary.OpenLibraryApi
-import com.ginoskos.biblomnemon.repositories.books.storage.remote.openlibrary.OpenLibrarySource
+import com.ginoskos.biblomnemon.core.scanner.IBarcodeScanner
+import com.ginoskos.biblomnemon.core.scanner.MLKitBarcodeScanner
+import com.ginoskos.biblomnemon.data.repositories.IBooksRepository
+import com.ginoskos.biblomnemon.data.repositories.ILocalBooksRepository
+import com.ginoskos.biblomnemon.data.repositories.LocalBooksRepository
+import com.ginoskos.biblomnemon.data.repositories.RemoteBooksRepository
+import com.ginoskos.biblomnemon.data.repositories.storage.database.ApplicationDatabase
+import com.ginoskos.biblomnemon.data.repositories.storage.database.DatabaseFactory
+import com.ginoskos.biblomnemon.data.repositories.storage.remote.RemoteApiFactory
+import com.ginoskos.biblomnemon.data.repositories.storage.remote.google.GoogleBooksApi
+import com.ginoskos.biblomnemon.data.repositories.storage.remote.google.GoogleBooksSource
+import com.ginoskos.biblomnemon.data.repositories.storage.remote.openlibrary.OpenLibraryApi
+import com.ginoskos.biblomnemon.data.repositories.storage.remote.openlibrary.OpenLibrarySource
+import com.ginoskos.biblomnemon.ui.screens.library.LibraryViewModel
+import com.ginoskos.biblomnemon.ui.screens.scanner.ScanViewModel
+import com.ginoskos.biblomnemon.ui.screens.search.SearchDetailViewModel
 import com.ginoskos.biblomnemon.ui.screens.search.SearchViewModel
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
@@ -30,19 +39,27 @@ object Modules {
              // Core dependencies
              single<ILogger> { TimberLogger }
              single<IDispatcherProvider> { AppDispatcherProvider }
+            // Barcode scanner
+             single<IBarcodeScanner> { MLKitBarcodeScanner(androidContext()) }
          },
          module {
-             factory<GoogleBooksApi> { ApiFactory().createGoogleBooksApi() }
-             factory<OpenLibraryApi> { ApiFactory().createOpenLibraryApi() }
+             single { DatabaseFactory().createRoom(androidContext(), ApplicationDatabase::class.java)}
+             single { get<ApplicationDatabase>().bookDao() }
+
+             single<ILocalBooksRepository> { LocalBooksRepository(get(), get()) }
+         },
+         module {
+             factory<GoogleBooksApi> { RemoteApiFactory().createGoogleBooksApi() }
+             factory<OpenLibraryApi> { RemoteApiFactory().createOpenLibraryApi() }
 
              factory { GoogleBooksSource(get<GoogleBooksApi>(), get()) }
              factory { OpenLibrarySource(get<OpenLibraryApi>(), get()) }
 
-             factory<IBooksRemoteSource> { get<GoogleBooksSource>() }
-             factory<IBooksRemoteSource> { get<OpenLibrarySource>() }
+             factory<IBooksRepository> { get<GoogleBooksSource>() }
+             factory<IBooksRepository> { get<OpenLibrarySource>() }
 
-             factory<IBooksRepository> {
-                 BooksRepository(
+             single<IBooksRepository> {
+                 RemoteBooksRepository(
                      sources = listOf(
                          get<GoogleBooksSource>(),
                          get<OpenLibrarySource>()
@@ -52,7 +69,10 @@ object Modules {
              }
          },
          module {
+             viewModel { LibraryViewModel(get()) }
              viewModel { SearchViewModel(get()) }
-         }
+             viewModel { SearchDetailViewModel(get(), get()) }
+             viewModel { ScanViewModel(get()) }
+         },
      )
 }

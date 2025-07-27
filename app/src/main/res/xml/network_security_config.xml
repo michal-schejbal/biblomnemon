@@ -1,0 +1,17 @@
+<network-security-config>
+    <!-- Default policy: Do NOT trust unknown CAs or cleartext -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Remote APIs -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="false">googleapis.com</domain>
+    </domain-config>
+
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="false">openlibrary.org</domain>
+    </domain-config>
+</network-security-config>

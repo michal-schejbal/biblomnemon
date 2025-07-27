@@ -7,6 +7,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -16,7 +17,7 @@ import com.ginoskos.biblomnemon.core.app.NavigationItems
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 
 private val bottomNavigationItems = listOf(
-    NavigationItems.Home
+    NavigationItems.Home, NavigationItems.Library
 )
 
 @Composable
@@ -37,8 +38,8 @@ fun BottomNavigation(
                         onSelect(item)
                         navController.navigate(item.screen.identifier)
                     },
-                    icon = { item.icon?.let {
-                        Icon(imageVector = it, contentDescription = stringResource(id = item.titleRes))
+                    icon = { item.iconRes?.let {
+                        Icon(painter = painterResource(id = item.iconRes), contentDescription = stringResource(id = item.titleRes))
                     }},
                     label = { Text(stringResource(id = item.titleRes)) }
                 )

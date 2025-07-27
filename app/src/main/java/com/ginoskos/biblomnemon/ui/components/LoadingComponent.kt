@@ -1,4 +1,4 @@
-package com.example.nbaplayers.ui.components
+package com.ginoskos.biblomnemon.ui.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

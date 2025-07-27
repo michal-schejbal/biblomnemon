@@ -21,6 +21,7 @@ import com.ginoskos.biblomnemon.core.app.NavigationItems
 import com.ginoskos.biblomnemon.ui.navigation.BottomNavigation
 import com.ginoskos.biblomnemon.ui.navigation.NavigationGraph
 import com.ginoskos.biblomnemon.ui.navigation.TopNavigation
+import com.ginoskos.biblomnemon.ui.navigation.currentScreenByRoute
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 
 class MainActivity : ComponentActivity() {
@@ -31,23 +32,28 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             var appTitle by remember { mutableStateOf(getString(R.string.app_name)) }
             var selectedTab by remember { mutableStateOf(NavigationItems.Home) }
+            val showNavigationBars = currentScreenByRoute(navController)?.isNavigationBarsVisible ?: true
 
             BiblomnemonTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = MaterialTheme.colorScheme.background,
                     topBar = {
-                        TopNavigation(
-                            navController = navController,
-                            title = appTitle
-                        )
+                        if (showNavigationBars) {
+                            TopNavigation(
+                                navController = navController,
+                                title = appTitle
+                            )
+                        }
                     },
                     bottomBar = {
-                        BottomNavigation(
-                            navController = navController,
-                            selected = selectedTab,
-                            onSelect = { selectedTab = it }
-                        )
+                        if (showNavigationBars) {
+                            BottomNavigation(
+                                navController = navController,
+                                selected = selectedTab,
+                                onSelect = { selectedTab = it }
+                            )
+                        }
                     }
                 ) { innerPadding ->
                     Surface(
