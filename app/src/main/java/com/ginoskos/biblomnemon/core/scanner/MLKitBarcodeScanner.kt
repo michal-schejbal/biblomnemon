@@ -10,15 +10,14 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.example.nbaplayers.app.logger.ILogger
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.launch
+import org.koin.java.KoinJavaComponent.inject
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -32,6 +31,7 @@ import java.util.concurrent.Executors
 class MLKitBarcodeScanner(
     private val context: Context
 ) : IBarcodeScanner {
+    private val logger: ILogger by inject(ILogger::class.java)
 
     private val _codes = MutableSharedFlow<String>(extraBufferCapacity = 1)
     override val codes = _codes.asSharedFlow()
@@ -96,23 +96,29 @@ class MLKitBarcodeScanner(
     @SuppressLint("UnsafeOptInUsageError")
     private fun processImageProxy(imageProxy: ImageProxy) {
         val mediaImage = imageProxy.image
-        if (mediaImage != null) {
-            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-            scanner.process(image)
-                .addOnSuccessListener { barcodes ->
-                    for (barcode in barcodes) {
-                        barcode.rawValue?.let { code ->
-                            CoroutineScope(Dispatchers.Default).launch {
-                                _codes.emit(code)
-                            }
-                        }
+        if (mediaImage == null) {
+            imageProxy.close()
+            return
+        }
+
+        val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
+        scanner.process(image)
+            .addOnSuccessListener { barcodes ->
+                barcodes.firstNotNullOfOrNull { it.rawValue }?.let {
+                    if (_codes.tryEmit(it)) {
+                        logger.d("Code emitted: %s", it)
+                    } else {
+                        logger.d("Barcode not emitted (buffer full or dropped): %s", it)
                     }
                 }
-                .addOnCompleteListener {
-                    imageProxy.close()
-                }
-        } else {
-            imageProxy.close()
-        }
+            }
+            .addOnFailureListener { e ->
+                logger.e(e, "Barcode processing failed.")
+            }
+            .addOnCompleteListener {
+                imageProxy.close()
+            }
+
     }
 }

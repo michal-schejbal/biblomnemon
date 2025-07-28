@@ -19,3 +19,17 @@ data class Book(
     val categories: List<String>? = null,
     val mainCategory: String? = null
 )
+
+fun Book.mergeBlankWith(other: Book): Book = copy(
+    title = title.ifBlank { other.title },
+    description = description ?: other.description,
+    authors = if (authors.isNullOrEmpty()) other.authors else authors,
+    isbn = isbn ?: other.isbn,
+    language = language ?: other.language,
+    coverUrls = if (coverUrls.isNullOrEmpty()) other.coverUrls else coverUrls,
+    publishYear = publishYear ?: other.publishYear,
+    publisher = publisher ?: other.publisher,
+    pageCount = pageCount ?: other.pageCount,
+    categories = if (categories.isNullOrEmpty()) other.categories else categories,
+    mainCategory = mainCategory ?: other.mainCategory
+)

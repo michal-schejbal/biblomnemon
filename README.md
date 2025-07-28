@@ -10,7 +10,7 @@ The app is built using **Kotlin**, **Jetpack Compose**, and follows modern archi
   Save, browse, and manage your books with details like title, author, categories, and cover art.
 
 - 🔍 **Search & Discover**
-  Search books via Google Books and Open Library APIs. ISBN Scanner included – scan barcodes to find books instantly.
+  Search books via Google Books and Open Library APIs including ISBN scanner to find books instantly.
 
 - 📚 **Track Your Reading Timeline**  
   Monitor what you've read, how much you've progressed, and revisit your favorite books.

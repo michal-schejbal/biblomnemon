@@ -1,5 +1,6 @@
 package com.ginoskos.biblomnemon.ui.screens.library
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -7,8 +8,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -17,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -58,14 +62,31 @@ object LibraryScreen : IScreen {
             model.fetch()
         }
 
-        LibraryScreenContent(
-            modifier = Modifier,
-            uiState = uiState,
-            query = query,
-            onQueryChange = model::onQueryChange,
-            onQueryClear = model::onQueryClear,
-//            onClick = // TODO onClick,
-        )
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            LibraryScreenContent(
+                uiState = uiState,
+                query = query,
+                onQueryChange = model::onQueryChange,
+                onQueryClear = model::onQueryClear,
+                onClick = { book ->
+                },
+            )
+
+            FloatingActionButton(
+                onClick = { navController.navigate(LibraryEditScreen.Identifier) },
+                containerColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add Book",
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+        }
     }
 }
 

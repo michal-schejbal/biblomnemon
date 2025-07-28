@@ -17,6 +17,7 @@ import com.ginoskos.biblomnemon.data.repositories.storage.remote.google.GoogleBo
 import com.ginoskos.biblomnemon.data.repositories.storage.remote.google.GoogleBooksSource
 import com.ginoskos.biblomnemon.data.repositories.storage.remote.openlibrary.OpenLibraryApi
 import com.ginoskos.biblomnemon.data.repositories.storage.remote.openlibrary.OpenLibrarySource
+import com.ginoskos.biblomnemon.ui.screens.library.LibraryEditViewModel
 import com.ginoskos.biblomnemon.ui.screens.library.LibraryViewModel
 import com.ginoskos.biblomnemon.ui.screens.scanner.ScanViewModel
 import com.ginoskos.biblomnemon.ui.screens.search.SearchDetailViewModel
@@ -70,6 +71,8 @@ object Modules {
          },
          module {
              viewModel { LibraryViewModel(get()) }
+             viewModel { LibraryEditViewModel(get(), get()) }
+
              viewModel { SearchViewModel(get()) }
              viewModel { SearchDetailViewModel(get(), get()) }
              viewModel { ScanViewModel(get()) }

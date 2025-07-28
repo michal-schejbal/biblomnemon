@@ -11,11 +11,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.ginoskos.biblomnemon.core.app.NavigationItems
 import com.ginoskos.biblomnemon.ui.screens.IScreen
 import com.ginoskos.biblomnemon.ui.screens.home.HomeScreen
+import com.ginoskos.biblomnemon.ui.screens.library.LibraryEditScreen
 import com.ginoskos.biblomnemon.ui.screens.scanner.ScanScreen
 import com.ginoskos.biblomnemon.ui.screens.search.SearchDetailScreen
 import kotlinx.coroutines.flow.collectLatest
 
 private val screens = NavigationItems.entries.map { it.screen } + listOf(
+    LibraryEditScreen,
     SearchDetailScreen,
     ScanScreen
 )
