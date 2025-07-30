@@ -1,4 +1,4 @@
-package com.ginoskos.biblomnemon.ui.components
+package com.ginoskos.biblomnemon.ui.theme.components
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth

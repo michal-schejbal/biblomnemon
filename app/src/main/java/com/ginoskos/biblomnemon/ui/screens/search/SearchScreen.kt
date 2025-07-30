@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,21 +28,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.ginoskos.biblomnemon.R
 import com.ginoskos.biblomnemon.data.entities.Author
 import com.ginoskos.biblomnemon.data.entities.Book
-import com.ginoskos.biblomnemon.ui.components.LoadingComponent
-import com.ginoskos.biblomnemon.ui.components.MessageComponent
 import com.ginoskos.biblomnemon.ui.navigation.ObserveResult
 import com.ginoskos.biblomnemon.ui.screens.IScreen
 import com.ginoskos.biblomnemon.ui.screens.Screen
+import com.ginoskos.biblomnemon.ui.screens.ScreenScaffoldHoist
+import com.ginoskos.biblomnemon.ui.screens.ScreenWrapper
 import com.ginoskos.biblomnemon.ui.screens.scanner.ScanScreen
-import com.ginoskos.biblomnemon.ui.snippets.BookListItem
+import com.ginoskos.biblomnemon.ui.screens.snippets.BookListItem
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
+import com.ginoskos.biblomnemon.ui.theme.components.LoadingComponent
+import com.ginoskos.biblomnemon.ui.theme.components.MessageComponent
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
 
@@ -52,44 +53,39 @@ import org.koin.androidx.compose.koinViewModel
 object SearchScreen : IScreen {
     @Serializable object Identifier
     override val identifier: Any get() = Identifier
+    override val hoist = ScreenScaffoldHoist()
 
-    override fun register(builder: NavGraphBuilder, navController: NavController) {
+    override fun register(builder: NavGraphBuilder, navController: NavHostController) {
         builder.composable<Identifier> {
             val args = it.toRoute<Identifier>()
-            Content(
-                navController = navController
-            )
-        }
-    }
+            val model: SearchViewModel = koinViewModel()
+            val uiState by model.uiState.collectAsStateWithLifecycle()
+            val query by model.query.collectAsStateWithLifecycle()
 
-    @Composable
-    override fun Content(navController: NavController) {
-        val model: SearchViewModel = koinViewModel()
-        val uiState by model.uiState.collectAsStateWithLifecycle()
-        val query by model.query.collectAsStateWithLifecycle()
-
-        navController.ObserveResult<String>(ScanScreen.SCANNED_ISBN) { isbn ->
-            model.onQueryChange("isbn:$isbn")
-        }
-
-        SearchScreenContent(
-            uiState = uiState,
-            query = query,
-            onQueryChange = model::onQueryChange,
-            onQueryClear = model::onQueryClear,
-            onClick = { book ->
-                navController.navigate(SearchDetailScreen.Identifier(book.id))
-            },
-            onScanClick = {
-                navController.navigate(ScanScreen.Identifier)
+            navController.ObserveResult<String>(ScanScreen.SCANNED_ISBN) { isbn ->
+                model.onQueryChange("isbn:$isbn")
             }
-        )
+
+            ScreenWrapper {
+                SearchScreenContent(
+                    uiState = uiState,
+                    query = query,
+                    onQueryChange = model::onQueryChange,
+                    onQueryClear = model::onQueryClear,
+                    onClick = { book ->
+                        navController.navigate(SearchDetailScreen.Identifier(book.id))
+                    },
+                    onScanClick = {
+                        navController.navigate(ScanScreen.Identifier)
+                    }
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun SearchScreenContent(
-    modifier: Modifier = Modifier,
     uiState: SearchUiState,
     query: String,
     onQueryChange: (String) -> Unit = {},
@@ -97,7 +93,7 @@ fun SearchScreenContent(
     onClick: (Book) -> Unit = {},
     onScanClick: () -> Unit = {}
 ) {
-    Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(
             query = query,
             onQueryChange = onQueryChange,
@@ -169,6 +165,7 @@ fun SearchBar(
     onScanClick: () -> Unit
 ) {
     OutlinedTextField(
+        modifier = Modifier.fillMaxWidth(),
         value = query,
         onValueChange = onQueryChange,
         label = { Text(stringResource(id = R.string.search_searchbar_label)) },
@@ -187,7 +184,6 @@ fun SearchBar(
                 }
             }
         },
-        modifier = Modifier.fillMaxWidth(),
         singleLine = true
     )
 }
@@ -209,9 +205,11 @@ fun SearchScreenPreview() {
     )
 
     BiblomnemonTheme(darkTheme = false) {
-        SearchScreenContent(
-            uiState = SearchUiState.Success(items = items),
-            query = "physics"
-        )
+        ScreenWrapper {
+            SearchScreenContent(
+                uiState = SearchUiState.Success(items = items),
+                query = "physics"
+            )
+        }
     }
 }

@@ -1,6 +1,5 @@
 package com.ginoskos.biblomnemon.ui.screens.library
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,24 +19,26 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.ginoskos.biblomnemon.R
 import com.ginoskos.biblomnemon.data.entities.Author
 import com.ginoskos.biblomnemon.data.entities.Book
-import com.ginoskos.biblomnemon.ui.components.LoadingComponent
-import com.ginoskos.biblomnemon.ui.components.MessageComponent
 import com.ginoskos.biblomnemon.ui.screens.IScreen
 import com.ginoskos.biblomnemon.ui.screens.Screen
-import com.ginoskos.biblomnemon.ui.snippets.BookListItem
+import com.ginoskos.biblomnemon.ui.screens.ScreenScaffoldHoist
+import com.ginoskos.biblomnemon.ui.screens.ScreenWrapper
+import com.ginoskos.biblomnemon.ui.screens.snippets.BookListItem
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
+import com.ginoskos.biblomnemon.ui.theme.ThemeLayout
+import com.ginoskos.biblomnemon.ui.theme.components.LoadingComponent
+import com.ginoskos.biblomnemon.ui.theme.components.MessageComponent
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
 
@@ -46,39 +47,13 @@ object LibraryScreen : IScreen {
     @Serializable object Identifier
     override val identifier: Any get() = Identifier
 
-    override fun register(builder: NavGraphBuilder, navController: NavController) {
-        builder.composable<Identifier> {
-            Content(navController = navController)
-        }
-    }
-
-    @Composable
-    override fun Content(navController: NavController) {
-        val model: LibraryViewModel = koinViewModel()
-        val uiState by model.uiState.collectAsStateWithLifecycle()
-        val query by model.query.collectAsStateWithLifecycle()
-
-        LaunchedEffect(Unit) {
-            model.fetch()
-        }
-
-
-        Box(modifier = Modifier.fillMaxSize()) {
-            LibraryScreenContent(
-                uiState = uiState,
-                query = query,
-                onQueryChange = model::onQueryChange,
-                onQueryClear = model::onQueryClear,
-                onClick = { book ->
-                },
-            )
-
+    override val hoist = ScreenScaffoldHoist(
+        fab = { navController ->
             FloatingActionButton(
                 onClick = { navController.navigate(LibraryEditScreen.Identifier) },
                 containerColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
+                    .padding(ThemeLayout.offset)
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -87,7 +62,31 @@ object LibraryScreen : IScreen {
                 )
             }
         }
+    )
+
+    override fun register(builder: NavGraphBuilder, navController: NavHostController) {
+        builder.composable<Identifier> {
+            val model: LibraryViewModel = koinViewModel()
+            val uiState by model.uiState.collectAsStateWithLifecycle()
+            val query by model.query.collectAsStateWithLifecycle()
+
+            LaunchedEffect(Unit) {
+                model.fetch()
+            }
+
+            ScreenWrapper {
+                LibraryScreenContent(
+                    uiState = uiState,
+                    query = query,
+                    onQueryChange = model::onQueryChange,
+                    onQueryClear = model::onQueryClear,
+                    onClick = { book ->
+                    },
+                )
+            }
+        }
     }
+
 }
 
 @Composable
@@ -99,7 +98,7 @@ fun LibraryScreenContent(
     onQueryClear: () -> Unit = {},
     onClick: (Book) -> Unit = {}
 ) {
-    Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = modifier.fillMaxSize()) {
         SearchBar(
             query = query,
             onQueryChange = onQueryChange,

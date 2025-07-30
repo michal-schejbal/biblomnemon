@@ -10,17 +10,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
-import com.ginoskos.biblomnemon.core.app.NavigationItems
-import com.ginoskos.biblomnemon.ui.navigation.BottomNavigation
 import com.ginoskos.biblomnemon.ui.navigation.NavigationGraph
-import com.ginoskos.biblomnemon.ui.navigation.TopNavigation
 import com.ginoskos.biblomnemon.ui.navigation.currentScreenByRoute
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 
@@ -30,31 +23,17 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
-            var appTitle by remember { mutableStateOf(getString(R.string.app_name)) }
-            var selectedTab by remember { mutableStateOf(NavigationItems.Home) }
-            val showNavigationBars = currentScreenByRoute(navController)?.isNavigationBarsVisible ?: true
+            val currentScreen = currentScreenByRoute(navController)
+            val screenScaffoldHoist = currentScreen?.hoist
 
             BiblomnemonTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = MaterialTheme.colorScheme.background,
-                    topBar = {
-                        if (showNavigationBars) {
-                            TopNavigation(
-                                navController = navController,
-                                title = appTitle
-                            )
-                        }
-                    },
-                    bottomBar = {
-                        if (showNavigationBars) {
-                            BottomNavigation(
-                                navController = navController,
-                                selected = selectedTab,
-                                onSelect = { selectedTab = it }
-                            )
-                        }
-                    }
+                    topBar = { screenScaffoldHoist?.topBar?.invoke(navController) },
+                    bottomBar = { screenScaffoldHoist?.bottomBar?.invoke(navController) },
+                    floatingActionButton  = { screenScaffoldHoist?.fab?.invoke(navController) },
+                    snackbarHost  = { screenScaffoldHoist?.snackBar?.invoke() },
                 ) { innerPadding ->
                     Surface(
                         modifier = Modifier
@@ -64,12 +43,7 @@ class MainActivity : ComponentActivity() {
                         shadowElevation = 10.dp,
                         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
                     ) {
-                        NavigationGraph(
-                            navController = navController,
-                            setTopBar = { title ->
-                                appTitle = title
-                            }
-                        )
+                        NavigationGraph(navController = navController)
                     }
                 }
             }

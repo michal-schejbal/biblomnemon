@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nbaplayers.app.logger.ILogger
 import com.ginoskos.biblomnemon.data.entities.Book
+import com.ginoskos.biblomnemon.data.entities.groupByInitialChar
 import com.ginoskos.biblomnemon.data.repositories.ILocalBooksRepository
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -54,8 +55,7 @@ class LibraryViewModel(
             val result = repository.fetch()
             result.fold(
                 onSuccess = { items ->
-                    val grouped = items.groupBy { it.title.first().uppercaseChar() }.toSortedMap()
-                    _uiState.value = LibraryUiState.Success(items = grouped)
+                    _uiState.value = LibraryUiState.Success(items = items.groupByInitialChar())
                 },
                 onFailure = { throwable ->
                     logger.e(throwable, "Search failed for query: %s", query)
@@ -72,8 +72,7 @@ class LibraryViewModel(
             val result = repository.search(query)
             result.fold(
                 onSuccess = { items ->
-                    val grouped = items.groupBy { it.title.first().uppercaseChar() }.toSortedMap()
-                    _uiState.value = LibraryUiState.Success(items = grouped)
+                    _uiState.value = LibraryUiState.Success(items = items.groupByInitialChar())
                 },
                 onFailure = { throwable ->
                     logger.e(throwable, "Search failed for query: %s", query)

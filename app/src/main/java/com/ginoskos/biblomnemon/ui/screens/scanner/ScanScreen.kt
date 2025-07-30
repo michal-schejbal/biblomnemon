@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,19 +40,21 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.ginoskos.biblomnemon.R
 import com.ginoskos.biblomnemon.core.app.navigateBack
 import com.ginoskos.biblomnemon.core.app.returnResult
 import com.ginoskos.biblomnemon.core.scanner.IBarcodeScanner
-import com.ginoskos.biblomnemon.ui.components.CardComponent
-import com.ginoskos.biblomnemon.ui.components.MessageComponent
-import com.ginoskos.biblomnemon.ui.components.ScreenToolbar
 import com.ginoskos.biblomnemon.ui.screens.IScreen
 import com.ginoskos.biblomnemon.ui.screens.Screen
+import com.ginoskos.biblomnemon.ui.screens.ScreenScaffoldHoist
+import com.ginoskos.biblomnemon.ui.screens.ScreenToolbar
+import com.ginoskos.biblomnemon.ui.screens.ScreenWrapper
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
+import com.ginoskos.biblomnemon.ui.theme.components.CardComponent
+import com.ginoskos.biblomnemon.ui.theme.components.MessageComponent
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
@@ -60,172 +63,181 @@ import org.koin.androidx.compose.koinViewModel
 object ScanScreen : IScreen {
     @Serializable object Identifier
     const val SCANNED_ISBN = "scanned_isbn"
-
     override val identifier: Any get() = Identifier
-    override val isNavigationBarsVisible: Boolean get() = false
 
-    override fun register(builder: NavGraphBuilder, navController: NavController) {
-        builder.composable<Identifier> {
-            Content(navController)
-        }
-    }
+    override val hoist = ScreenScaffoldHoist(
+        topBar = { navController ->
+            val model: ScanViewModel = koinViewModel()
+            val context = LocalContext.current
 
-    @Composable
-    override fun Content(navController: NavController) {
-        val model: ScanViewModel = koinViewModel()
-        val uiState by model.uiState.collectAsStateWithLifecycle()
-        val lifecycleOwner = LocalLifecycleOwner.current
-        val context = LocalContext.current
-
-        val launcher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission()
-        ) { granted ->
-            model.onEvent(ScanUiEvent.PermissionResult(granted))
-        }
-
-        LaunchedEffect(model) {
-            model.events.collect { event ->
-                when (event) {
-                    ScanUiEvent.NavigateBack -> {
-                        navController.navigateBack()
-                    }
-                    ScanUiEvent.PermissionRequest -> {
-                        launcher.launch(Manifest.permission.CAMERA)
-                    }
-                    is ScanUiEvent.PermissionResult -> {
-                        model.onPermissionGranted(event.granted)
-                    }
-                    ScanUiEvent.OpenSettings -> {
-                        Intent(
-                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                            Uri.fromParts("package", context.packageName, null)
-                        ).apply {
-                            context.startActivity(this)
+            LaunchedEffect(model) {
+                model.events.collect { event ->
+                    when (event) {
+                        ScanUiEvent.NavigateBack -> {
+                            navController.navigateBack()
                         }
-                    }
-                    is ScanUiEvent.PreviewReady ->  {
-                        model.onPreviewReady(event.previewView, lifecycleOwner)
-                    }
-                    is ScanUiEvent.ScannedResult -> {
-                        navController.returnResult(SCANNED_ISBN, event.isbn)
+                        ScanUiEvent.OpenSettings -> {
+                            Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.fromParts("package", context.packageName, null)
+                            ).apply {
+                                context.startActivity(this)
+                            }
+                        }
+                        else -> {}
                     }
                 }
             }
-        }
 
-        DisposableEffect(Unit) {
-            onDispose {
-                model.stopScanning()
+            ScreenToolbar(onBack = { model.onEvent(ScanUiEvent.NavigateBack) }) {
+                IconButton(onClick = { model.onEvent(ScanUiEvent.OpenSettings) }) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_settings),
+                        contentDescription = stringResource(id = R.string.scan_settings_content_desc),
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
+        },
+        bottomBar = {}
+    )
+
+    override fun register(builder: NavGraphBuilder, navController: NavHostController) {
+        builder.composable<Identifier> {
+            val model: ScanViewModel = koinViewModel()
+            val uiState by model.uiState.collectAsStateWithLifecycle()
+            val lifecycleOwner = LocalLifecycleOwner.current
+
+
+            val launcher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission()
+            ) { granted ->
+                model.onEvent(ScanUiEvent.PermissionResult(granted))
+            }
+
+            LaunchedEffect(model) {
+                model.events.collect { event ->
+                    when (event) {
+                        ScanUiEvent.PermissionRequest -> {
+                            launcher.launch(Manifest.permission.CAMERA)
+                        }
+                        is ScanUiEvent.PermissionResult -> {
+                            model.onPermissionGranted(event.granted)
+                        }
+                        is ScanUiEvent.PreviewReady ->  {
+                            model.onPreviewReady(event.previewView, lifecycleOwner)
+                        }
+                        is ScanUiEvent.ScannedResult -> {
+                            navController.returnResult(SCANNED_ISBN, event.isbn)
+                        }
+                        else -> {}
+                    }
+                }
+            }
+
+            DisposableEffect(Unit) {
+                onDispose {
+                    model.stopScanning()
+                }
+            }
+
+            ScreenWrapper {
+                ScanScreenContent(
+                    uiState,
+                    model = model
+                )
             }
         }
-
-        ScanScreenContent(
-            uiState,
-            model = model
-        )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScanScreenContent(
     uiState: ScanUiState,
     model: ScanViewModel
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        ScreenToolbar(onBackClick = { model.onEvent(ScanUiEvent.NavigateBack) }) {
-            IconButton(onClick = { model.onEvent(ScanUiEvent.OpenSettings) }) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_settings),
-                    contentDescription = stringResource(id = R.string.scan_settings_content_desc),
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
+    when (uiState) {
+        ScanUiState.PermissionDenied,
+        ScanUiState.PermissionRequest -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    MessageComponent(
+                        modifier = Modifier,
+                        message = stringResource(id = R.string.scan_permission_message),
+                        iconPainter = painterResource(R.drawable.ic_camera)
+                    )
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    Button(
+                        modifier = Modifier.alpha(0.6f),
+                        onClick = { model.onEvent(ScanUiEvent.PermissionRequest) }
+                    ) {
+                        Text(stringResource(id = R.string.scan_permission_button))
+                    }
+                }
             }
         }
 
-        when (uiState) {
-            ScanUiState.PermissionDenied,
-            ScanUiState.PermissionRequest -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    contentAlignment = Alignment.Center
+        ScanUiState.Scanning -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        MessageComponent(
-                            modifier = Modifier,
-                            message = stringResource(id = R.string.scan_permission_message),
-                            iconPainter = painterResource(R.drawable.ic_camera)
+                        Icon(
+                            painter = painterResource(R.drawable.ic_camera),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
                         )
-
-                        Spacer(modifier = Modifier.height(32.dp))
-
-                        Button(
-                            modifier = Modifier.alpha(0.6f),
-                            onClick = { model.onEvent(ScanUiEvent.PermissionRequest) }
-                        ) {
-                            Text(stringResource(id = R.string.scan_permission_button))
-                        }
+                        Text(
+                            text = stringResource(id = R.string.scan_align_barcode),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
                     }
-                }
-            }
 
-            ScanUiState.Scanning -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    CardComponent(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.3f)
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_camera),
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = stringResource(id = R.string.scan_align_barcode),
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
-
-                        CardComponent(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight(0.3f)
-                        ) {
-                            AndroidView(
-                                modifier = Modifier.fillMaxSize(),
-                                factory = { ctx ->
-                                    PreviewView(ctx).apply {
-                                        implementationMode =
-                                            PreviewView.ImplementationMode.COMPATIBLE
-                                        scaleType = PreviewView.ScaleType.FILL_CENTER
-                                        post {
-                                            model.onEvent(ScanUiEvent.PreviewReady(this))
-                                        }
+                        AndroidView(
+                            modifier = Modifier.fillMaxSize(),
+                            factory = { ctx ->
+                                PreviewView(ctx).apply {
+                                    implementationMode =
+                                        PreviewView.ImplementationMode.COMPATIBLE
+                                    scaleType = PreviewView.ScaleType.FILL_CENTER
+                                    post {
+                                        model.onEvent(ScanUiEvent.PreviewReady(this))
                                     }
                                 }
-                            )
-                        }
+                            }
+                        )
                     }
                 }
             }
+        }
 
-            is ScanUiState.Scanned -> {
-                // Handled in LaunchedEffect
-            }
+        is ScanUiState.Scanned -> {
+            // Handled in LaunchedEffect
         }
     }
 }

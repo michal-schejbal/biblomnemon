@@ -22,10 +22,10 @@ private val bottomNavigationItems = listOf(
 
 @Composable
 fun BottomNavigation(
-    navController: NavHostController,
-    selected: NavigationItems = NavigationItems.Home,
-    onSelect: (NavigationItems) -> Unit = { }
+    navController: NavHostController
 ) {
+    val selected = currentScreenByRoute(navController) ?: NavigationItems.Home
+
     Surface(shadowElevation = 8.dp) {
         NavigationBar(
             containerColor = MaterialTheme.colorScheme.surface,
@@ -33,9 +33,8 @@ fun BottomNavigation(
         ) {
             bottomNavigationItems.forEach { item ->
                 NavigationBarItem(
-                    selected = item == selected,
+                    selected = item.screen == selected,
                     onClick = {
-                        onSelect(item)
                         navController.navigate(item.screen.identifier)
                     },
                     icon = { item.iconRes?.let {

@@ -8,6 +8,7 @@ import com.ginoskos.biblomnemon.data.repositories.IBooksRepository
 import com.ginoskos.biblomnemon.data.repositories.ILocalBooksRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class LibraryEditUiState(
@@ -21,14 +22,14 @@ class LibraryEditViewModel(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LibraryEditUiState())
-    val uiState: StateFlow<LibraryEditUiState> = _uiState
+    val uiState: StateFlow<LibraryEditUiState> = _uiState.asStateFlow()
 
-    fun update(update: (Book) -> Book) {
-        _uiState.value = _uiState.value.copy(book = update(_uiState.value.book))
+    fun update(book: Book) {
+        _uiState.value = _uiState.value.copy(book = book)
     }
 
     fun setIsbn(isbn: String) {
-        update { it.copy(isbn = isbn) }
+        update(book = _uiState.value.book.copy(isbn = isbn))
 
         if (isbn.length == 10 || isbn.length == 13) {
             viewModelScope.launch {

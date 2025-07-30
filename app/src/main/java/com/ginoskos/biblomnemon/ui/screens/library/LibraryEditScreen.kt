@@ -1,12 +1,17 @@
 package com.ginoskos.biblomnemon.ui.screens.library
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -20,22 +25,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.ginoskos.biblomnemon.R
 import com.ginoskos.biblomnemon.core.app.navigateBack
 import com.ginoskos.biblomnemon.data.entities.Author
-import com.ginoskos.biblomnemon.ui.components.LoadingComponent
-import com.ginoskos.biblomnemon.ui.components.ScreenToolbar
+import com.ginoskos.biblomnemon.data.entities.Book
 import com.ginoskos.biblomnemon.ui.navigation.ObserveResult
 import com.ginoskos.biblomnemon.ui.screens.IScreen
 import com.ginoskos.biblomnemon.ui.screens.Screen
+import com.ginoskos.biblomnemon.ui.screens.ScreenScaffoldHoist
+import com.ginoskos.biblomnemon.ui.screens.ScreenToolbar
+import com.ginoskos.biblomnemon.ui.screens.ScreenWrapper
 import com.ginoskos.biblomnemon.ui.screens.scanner.ScanScreen
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
+import com.ginoskos.biblomnemon.ui.theme.components.LoadingComponent
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
 
@@ -44,115 +53,109 @@ object LibraryEditScreen : IScreen {
     @Serializable
     object Identifier
     override val identifier: Any get() = Identifier
-    override val isNavigationBarsVisible: Boolean get() = false
 
-    override fun register(builder: NavGraphBuilder, navController: NavController) {
+    override val hoist = ScreenScaffoldHoist(
+        topBar = { navController ->
+            val model: LibraryEditViewModel = koinViewModel()
+            val uiState by model.uiState.collectAsStateWithLifecycle()
+
+            ScreenToolbar(onBack = {
+                navController.navigateBack()
+            }) {
+                TextButton(onClick = {
+                    model.insert()
+                    navController.navigateBack()
+                }, enabled = uiState.book.title.isNotBlank()) {
+                    Text("Save".uppercase())
+                }
+            }
+        },
+        bottomBar = {}
+    )
+
+    override fun register(builder: NavGraphBuilder, navController: NavHostController) {
         builder.composable<Identifier> {
-            Content(navController)
+            val model: LibraryEditViewModel = koinViewModel()
+            val uiState by model.uiState.collectAsStateWithLifecycle()
+
+            navController.ObserveResult<String>(ScanScreen.SCANNED_ISBN) { isbn ->
+                model.setIsbn(isbn)
+            }
+
+            ScreenWrapper {
+                LibraryEditScreenContent(
+                    uiState = uiState,
+                    onUpdate = model::update,
+                    onScan = { navController.navigate(ScanScreen.Identifier) }
+                )
+            }
         }
-    }
-
-    @Composable
-    override fun Content(navController: NavController) {
-        val model: LibraryEditViewModel = koinViewModel()
-        val uiState by model.uiState.collectAsStateWithLifecycle()
-
-        navController.ObserveResult<String>(ScanScreen.SCANNED_ISBN) { isbn ->
-            model.setIsbn(isbn)
-        }
-
-        LibraryAddScreenContent(
-            uiState = uiState,
-            onSave = {
-                model.insert()
-                navController.navigateBack()
-            },
-            onBack = {
-                navController.navigateBack()
-             },
-            onScan = { navController.navigate(ScanScreen.Identifier) }
-        )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LibraryAddScreenContent(
+fun LibraryEditScreenContent(
     uiState: LibraryEditUiState,
-    onSave: () -> Unit = {},
-    onBack: () -> Unit = {},
+    onUpdate: (Book) -> Unit = {},
     onScan: () -> Unit = {}
 ) {
     var showMore by remember { mutableStateOf(false) }
     val scroll = rememberScrollState()
 
+    if (uiState.loading) {
+        LoadingComponent(modifier = Modifier.fillMaxWidth())
+    }
     Column(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .verticalScroll(scroll),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        if (uiState.loading) {
-            LoadingComponent(modifier = Modifier.fillMaxWidth())
-        }
-
-        ScreenToolbar(
-            onBackClick = onBack,
-            content = {
-                TextButton(onClick = onSave, enabled = uiState.book.title.isNotBlank()) {
-                    Text("Save".uppercase())
-                }
-            }
-        )
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scroll)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-
-
-            OutlinedTextField(
-                value = uiState.book.title,
-                onValueChange = { uiState.book.copy(title = it) },
-                label = { Text("Title") },
-                modifier = Modifier.fillMaxWidth()
+        with(uiState.book) {
+            // Title
+            ClearableOutlinedTextField(
+                value = title,
+                onValueChange = { onUpdate(copy(title = it)) },
+                label = "Title"
             )
 
-            OutlinedTextField(
-                value = uiState.book.authors?.joinToString(", ") { it.name } ?: "",
+            // Authors
+            ClearableOutlinedTextField(
+                value = authors?.joinToString(", ") { it.name } ?: "",
                 onValueChange = {
-                    uiState.book.copy(
-                        authors = it.split(',').mapNotNull { name ->
-                            name.trim().takeIf(String::isNotEmpty)?.let(::Author)
-                        })
+                    val updated = it.split(',').mapNotNull { name ->
+                        name.trim().takeIf(String::isNotEmpty)?.let(::Author)
+                    }
+                    onUpdate(copy(authors = updated))
                 },
-                label = { Text("Author") },
-                modifier = Modifier.fillMaxWidth()
+                label = "Author"
             )
 
-            OutlinedTextField(
-                value = uiState.book.publishYear?.toString() ?: "",
-                onValueChange = { uiState.book.copy(publishYear = it.toIntOrNull()) },
-                label = { Text("Publish Year") },
-                modifier = Modifier.fillMaxWidth()
+            // Publish Year
+            ClearableOutlinedTextField(
+                value = publishYear?.toString() ?: "",
+                onValueChange = {
+                    val clean = it.filter { ch -> ch.isDigit() }
+                    onUpdate(copy(publishYear = clean.toIntOrNull()))
+                },
+                label = "Publish Year",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
-            OutlinedTextField(
-                value = uiState.book.isbn.orEmpty(),
-                onValueChange = { uiState.book.copy(isbn = it) },
-                label = { Text("ISBN") },
+            // ISBN with barcode scan
+            ClearableOutlinedTextField(
+                value = isbn.orEmpty(),
+                onValueChange = { onUpdate(copy(isbn = it.filter { c -> c.isDigit() || c == 'X' || c == 'x' })) },
+                label = "ISBN",
                 trailingIcon = {
                     IconButton(onClick = onScan) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_barcode),
-                            contentDescription = "Scan ISBN"
-                        )
+                        Icon(painter = painterResource(R.drawable.ic_barcode), contentDescription = "Scan ISBN")
                     }
-                },
-                modifier = Modifier.fillMaxWidth()
+                }
             )
 
+            // Show more toggle
             TextButton(
                 onClick = { showMore = !showMore },
                 modifier = Modifier.align(Alignment.End)
@@ -161,62 +164,95 @@ fun LibraryAddScreenContent(
             }
 
             if (showMore) {
-                OutlinedTextField(
-                    value = uiState.book.description.orEmpty(),
-                    onValueChange = { uiState.book.copy(description = it) },
-                    label = { Text("Description") },
-                    modifier = Modifier.fillMaxWidth()
+                ClearableOutlinedTextField(
+                    value = description.orEmpty(),
+                    onValueChange = { onUpdate(copy(description = it)) },
+                    label = "Description",
+                    singleLine = false // allow multiline
                 )
 
-                OutlinedTextField(
-                    value = uiState.book.language.orEmpty(),
-                    onValueChange = { uiState.book.copy(language = it) },
-                    label = { Text("Language") },
-                    modifier = Modifier.fillMaxWidth()
+                ClearableOutlinedTextField(
+                    value = language.orEmpty(),
+                    onValueChange = { onUpdate(copy(language = it)) },
+                    label = "Language"
                 )
 
-                OutlinedTextField(
-                    value = uiState.book.publisher.orEmpty(),
-                    onValueChange = { uiState.book.copy(publisher = it) },
-                    label = { Text("Publisher") },
-                    modifier = Modifier.fillMaxWidth()
+                ClearableOutlinedTextField(
+                    value = publisher.orEmpty(),
+                    onValueChange = { onUpdate(copy(publisher = it)) },
+                    label = "Publisher"
                 )
 
-                OutlinedTextField(
-                    value = uiState.book.pageCount?.toString() ?: "",
-                    onValueChange = { uiState.book.copy(pageCount = it.toIntOrNull()) },
-                    label = { Text("Page Count") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = uiState.book.mainCategory.orEmpty(),
-                    onValueChange = { uiState.book.copy(mainCategory = it) },
-                    label = { Text("Main Category") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = uiState.book.categories?.joinToString(", ") ?: "",
+                ClearableOutlinedTextField(
+                    value = pageCount?.toString() ?: "",
                     onValueChange = {
-                        uiState.book.copy(
-                            categories = it.split(',')
-                                .mapNotNull { s -> s.trim().takeIf(String::isNotEmpty) })
+                        val digitsOnly = it.filter { ch -> ch.isDigit() }
+                        onUpdate(copy(pageCount = digitsOnly.toIntOrNull()))
                     },
-                    label = { Text("Categories (comma-separated)") },
-                    modifier = Modifier.fillMaxWidth()
+                    label = "Page Count",
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+
+                ClearableOutlinedTextField(
+                    value = mainCategory.orEmpty(),
+                    onValueChange = { onUpdate(copy(mainCategory = it)) },
+                    label = "Main Category"
+                )
+
+                ClearableOutlinedTextField(
+                    value = categories?.joinToString(", ") ?: "",
+                    onValueChange = {
+                        val updated = it.split(',')
+                            .map { s -> s.trim() }
+                            .filter { s -> s.isNotEmpty() }
+                        onUpdate(copy(categories = updated.takeIf { it.isNotEmpty() }))
+                    },
+                    label = "Categories (comma-separated)"
                 )
             }
         }
     }
 }
 
+@Composable
+private fun ClearableOutlinedTextField(
+    modifier: Modifier = Modifier,
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    singleLine: Boolean = true
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        trailingIcon = {
+            Row {
+                if (value.isNotBlank()) {
+                    IconButton(onClick = { onValueChange("") }) {
+                        Icon(Icons.Default.Clear, contentDescription = "Clear")
+                    }
+                }
+                trailingIcon?.invoke()
+            }
+        },
+        keyboardOptions = keyboardOptions,
+        modifier = modifier.fillMaxSize(),
+        singleLine = singleLine
+    )
+}
 
+
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true, name = "Library Add Screen - Expanded")
 @Composable
 fun LibraryAddScreenPreview() {
     BiblomnemonTheme {
-        LibraryAddScreenContent(LibraryEditUiState())
+        LibraryEditScreenContent(
+            uiState = LibraryEditUiState()
+        )
     }
 }
 

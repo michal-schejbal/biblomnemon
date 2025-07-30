@@ -33,3 +33,9 @@ fun Book.mergeBlankWith(other: Book): Book = copy(
     categories = if (categories.isNullOrEmpty()) other.categories else categories,
     mainCategory = mainCategory ?: other.mainCategory
 )
+
+fun List<Book>.groupByInitialChar(): Map<Char, List<Book>> =  groupBy {
+    it.title
+        .first()
+        .uppercaseChar()
+}.toSortedMap()

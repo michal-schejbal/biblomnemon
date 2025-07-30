@@ -1,4 +1,4 @@
-package com.ginoskos.biblomnemon.ui.snippets
+package com.ginoskos.biblomnemon.ui.screens.snippets
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -19,8 +19,8 @@ import coil.compose.AsyncImage
 import com.ginoskos.biblomnemon.R
 import com.ginoskos.biblomnemon.data.entities.Author
 import com.ginoskos.biblomnemon.data.entities.Book
-import com.ginoskos.biblomnemon.ui.components.CardComponent
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
+import com.ginoskos.biblomnemon.ui.theme.components.CardComponent
 
 @Composable
 fun BookListItem(item: Book, onClick: () -> Unit = {}) {

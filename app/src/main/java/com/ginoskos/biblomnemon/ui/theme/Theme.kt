@@ -2,12 +2,18 @@ package com.ginoskos.biblomnemon.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+
+object ThemeLayout {
+    val offset: PaddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 16.dp)
+}
 
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryText,
@@ -34,8 +40,6 @@ private val DarkColorScheme = darkColorScheme(
     error = Error,
     onError = Color.Black
 )
-
-
 
 @Composable
 fun BiblomnemonTheme(

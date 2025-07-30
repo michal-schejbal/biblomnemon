@@ -11,7 +11,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,17 +18,16 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.ginoskos.biblomnemon.R
-import com.ginoskos.biblomnemon.ui.components.CircleIconComponent
 import com.ginoskos.biblomnemon.ui.screens.search.SearchScreen
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 import com.ginoskos.biblomnemon.ui.theme.Surface
+import com.ginoskos.biblomnemon.ui.theme.components.CircleIconComponent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopNavigation(
-    modifier: Modifier = Modifier,
     navController: NavHostController,
-    title: String
+    title: String = stringResource(id = R.string.app_name)
 ) {
     TopAppBar(
         title = {
@@ -66,7 +64,6 @@ fun TopNavigation(
                 )
             }
         },
-        modifier = modifier,
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.Transparent,
             titleContentColor = MaterialTheme.colorScheme.onSurface,

@@ -3,7 +3,6 @@ package com.ginoskos.biblomnemon.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -23,7 +22,7 @@ private val screens = NavigationItems.entries.map { it.screen } + listOf(
 )
 
 @Composable
-fun NavigationGraph(modifier: Modifier = Modifier, navController: NavHostController, setTopBar: (title: String) -> Unit) {
+fun NavigationGraph(navController: NavHostController) {
     NavHost(navController = navController, startDestination = HomeScreen.Identifier) {
         screens.forEach { screen ->
             screen.register(this, navController)
@@ -38,7 +37,10 @@ fun currentScreenByRoute(
     val backStackEntry by navController.currentBackStackEntryAsState()
     val route = backStackEntry?.destination?.route
 
-    if (route == null) return null
+    if (route == null) {
+        return null
+    }
+
     return screens.firstOrNull { screen ->
         route.contains(screen::class.simpleName ?: "")
     }
