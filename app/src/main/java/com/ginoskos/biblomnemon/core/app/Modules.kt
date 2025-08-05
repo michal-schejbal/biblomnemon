@@ -53,7 +53,7 @@ object Modules {
             single { get<ApplicationDatabase>().bookDao() }
             single { get<ApplicationDatabase>().categoryDao() }
 
-            single<ILocalBooksRepository> { LocalBooksRepository(get(), get()) }
+            single<ILocalBooksRepository> { LocalBooksRepository(get(), get(),get()) }
             single<ILocalCategoriesRepository> { LocalCategoriesRepository(get(), get()) }
         },
         module {
@@ -85,7 +85,7 @@ object Modules {
 
             // Library
             viewModel { LibraryViewModel(get(), get()) }
-            viewModel { LibraryEditViewModel(get(), get()) }
+            viewModel { LibraryEditViewModel(get(), get(), get()) }
             viewModel { CategoryManagerViewModel(get(), get()) }
 
             // Scan

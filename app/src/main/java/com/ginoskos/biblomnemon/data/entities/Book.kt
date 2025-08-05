@@ -16,11 +16,13 @@ data class Book(
     val authors: List<Author>? = null,
     val isbn: String? = null,   // ISBN-10 ([0-9X]{10}) or ISBN-13 ([0-9]{13})
     val language: String? = null,
-    val coverUrls: List<String>? = null,
+    val covers: List<String>? = null,
     val publishYear: Int? = null,
     val publisher: String? = null,
     val pageCount: Int? = null,
-    val categories: List<Category>? = null
+    val categories: List<Category>? = null,
+    val created: Long? = null,
+    val updated: Long? = null
 )
 
 fun Book.mergeBlankWith(other: Book): Book = copy(
@@ -29,15 +31,19 @@ fun Book.mergeBlankWith(other: Book): Book = copy(
     authors = if (authors.isNullOrEmpty()) other.authors else authors,
     isbn = isbn ?: other.isbn,
     language = language ?: other.language,
-    coverUrls = if (coverUrls.isNullOrEmpty()) other.coverUrls else coverUrls,
+    covers = if (covers.isNullOrEmpty()) other.covers else covers,
     publishYear = publishYear ?: other.publishYear,
     publisher = publisher ?: other.publisher,
     pageCount = pageCount ?: other.pageCount,
     categories = if (categories.isNullOrEmpty()) other.categories else categories,
+    created = created ?: other.created,
+    updated = updated ?: other.updated
 )
 
 fun List<Book>.groupByInitialChar(): Map<Char, List<Book>> =  groupBy {
     it.title
-        .first()
-        .uppercaseChar()
+        .trimStart()
+        .replace(Regex("^(?i)(the|a|an)\\s+"), "")
+        .firstOrNull { ch -> ch.isLetterOrDigit() }
+        ?.uppercaseChar() ?: '#'
 }.toSortedMap()

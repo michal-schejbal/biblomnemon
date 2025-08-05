@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 object ThemeLayout {
-    val offset: PaddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 16.dp)
+    val offset: PaddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 0.dp)
 }
 
 private val LightColorScheme = lightColorScheme(

@@ -42,6 +42,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -58,6 +59,7 @@ import com.ginoskos.biblomnemon.ui.theme.ThemeLayout
 import com.ginoskos.biblomnemon.ui.theme.components.LoadingComponent
 import com.ginoskos.biblomnemon.ui.theme.components.MessageComponent
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,6 +74,7 @@ fun CategoryManagerBottomSheet(
     val sheetState = rememberModalBottomSheetState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(bookId) {
         model.fetch(bookId)
@@ -81,10 +84,14 @@ fun CategoryManagerBottomSheet(
         model.events.collect { event ->
             when (event) {
                 is CategoryManagerUiEvent.Success -> {
-                    snackbarHostState.showSnackbar(context.getString(event.message))
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(context.getString(event.message))
+                    }
                 }
                 is CategoryManagerUiEvent.Failure -> {
-                    snackbarHostState.showSnackbar(context.getString(event.message))
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(context.getString(event.message))
+                    }
                 }
 
                 CategoryManagerUiEvent.Dismiss -> {
@@ -128,14 +135,18 @@ fun CategoryManagerBottomSheet(
             .drop(1)
             .collect { value ->
                 if (value == SheetValue.Hidden) {
-                    onDismiss(emptyList())
+                    (uiState as? CategoryManagerUiState.Success)?.let {
+                        onDismiss(it.selection)
+                    }
                 }
             }
     }
 
     ModalBottomSheet(
         onDismissRequest = {
-            onDismiss(emptyList())
+            (uiState as? CategoryManagerUiState.Success)?.let {
+                onDismiss(it.selection)
+            }
         },
         sheetState = sheetState,
         modifier = Modifier
@@ -262,8 +273,9 @@ fun CategoryListItem(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(
                 checked = isSelected,
-                onCheckedChange = { onAction(CategoryManagerUiEvent.Select(category)) }
+                onCheckedChange = null
             )
+            Spacer(modifier = Modifier.width(4.dp))
             Text(category.title.orEmpty())
         }
 

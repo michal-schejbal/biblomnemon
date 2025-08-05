@@ -28,7 +28,7 @@ fun OpenLibraryDoc.toDomain() = Book(
     authors = authorName?.map { Author(name = it) },
     isbn = isbn?.firstOrNull(),
     language = language?.firstOrNull(),
-    coverUrls = listOf(
+    covers = listOf(
         "https://covers.openlibrary.org/b/id/$key-S.jpg?default=false",
         "https://covers.openlibrary.org/b/id/$key-M.jpg?default=false",
         "https://covers.openlibrary.org/b/id/$key-L.jpg?default=false"

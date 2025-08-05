@@ -69,7 +69,7 @@ fun LibraryEditScreen(navController: NavHostController) {
 
     LaunchedEffect(Unit) {
         transfer.pop { item ->
-            model.update(book = item)
+            model.fetch(item = item)
         }
     }
 
@@ -81,7 +81,7 @@ fun LibraryEditScreen(navController: NavHostController) {
                 navController.navigateBack()
             }) {
                 TextButton(onClick = {
-                    model.insert()
+                    model.store()
                     navController.navigateBack()
                 }, enabled = uiState.item.title.isNotBlank()) {
                     Text(stringResource(R.string.library_edit_save).uppercase())
@@ -286,7 +286,7 @@ fun CategoriesFieldWithChips(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 } else {
-                    FlowRow() {
+                    FlowRow {
                         categories.forEach { category ->
                             AssistChip(
                                 onClick = {},

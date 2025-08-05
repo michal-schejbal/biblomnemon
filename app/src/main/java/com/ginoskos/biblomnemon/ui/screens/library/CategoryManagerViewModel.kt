@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 sealed class CategoryManagerUiState {
     data class Success(
         val items: List<Category>,
-        val selection: List<Category>,
+        val selection: List<Category> = emptyList(),
         val query: String = ""
     ) : CategoryManagerUiState()
     data class Error(val message: String) : CategoryManagerUiState()

@@ -5,7 +5,6 @@ import androidx.room.PrimaryKey
 import com.ginoskos.biblomnemon.data.entities.Author
 import com.ginoskos.biblomnemon.data.entities.Book
 import com.ginoskos.biblomnemon.data.entities.BookSource
-import com.ginoskos.biblomnemon.data.entities.Category
 
 @Entity(tableName = BookEntity.NAME)
 data class BookEntity(
@@ -16,11 +15,12 @@ data class BookEntity(
     val authors: List<Author>?,
     val isbn: String?,
     val language: String?,
-    val coverUrls: List<String>?,
+    val covers: List<String>?,
     val publishYear: Int?,
     val publisher: String?,
     val pageCount: Int?,
-    val categories: List<Category>?
+    val created: Long? = System.currentTimeMillis(),
+    val updated: Long? = System.currentTimeMillis()
 ) {
     companion object {
         const val NAME = "books"
@@ -35,11 +35,12 @@ fun Book.toEntity() = BookEntity(
     authors = authors,
     isbn = isbn,
     language = language,
-    coverUrls = coverUrls,
+    covers = covers,
     publishYear = publishYear,
     publisher = publisher,
     pageCount = pageCount,
-    categories = categories
+    created = created,
+    updated = updated
 )
 
 fun BookEntity.toDomain() = Book(
@@ -50,9 +51,10 @@ fun BookEntity.toDomain() = Book(
     authors = authors,
     isbn = isbn,
     language = language,
-    coverUrls = coverUrls,
+    covers = covers,
     publishYear = publishYear,
     publisher = publisher,
     pageCount = pageCount,
-    categories = categories
+    created = created,
+    updated = updated
 )

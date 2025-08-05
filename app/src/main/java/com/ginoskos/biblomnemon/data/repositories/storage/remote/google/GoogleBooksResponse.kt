@@ -58,7 +58,7 @@ fun GoogleBookItem.toDomain(): Book? {
         authors = info.authors?.map { Author(name = it) },
         isbn = info.industryIdentifiers?.lastOrNull() { it.type?.startsWith("ISBN") == true }?.identifier,
         language = info.language,
-        coverUrls = buildList {
+        covers = buildList {
             info.imageLinks?.small?.let { add(it.forceHttps()) } ?:
                 info.imageLinks?.thumbnail?.let { add(it.forceHttps()) }
             info.imageLinks?.medium?.let { add(it.forceHttps()) }

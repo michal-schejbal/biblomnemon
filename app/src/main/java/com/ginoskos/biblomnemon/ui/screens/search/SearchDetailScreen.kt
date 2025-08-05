@@ -1,6 +1,7 @@
 package com.ginoskos.biblomnemon.ui.screens.search
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,10 +37,10 @@ import com.ginoskos.biblomnemon.data.entities.BookCoverCoverType
 import com.ginoskos.biblomnemon.ui.navigation.NavigationRoute
 import com.ginoskos.biblomnemon.ui.navigation.ScreenToolbar
 import com.ginoskos.biblomnemon.ui.navigation.navigateBack
-import com.ginoskos.biblomnemon.ui.screens.SubScreen
+import com.ginoskos.biblomnemon.ui.screens.ScreenWrapper
+import com.ginoskos.biblomnemon.ui.screens.common.CollapsingScreen
 import com.ginoskos.biblomnemon.ui.screens.library.BookTransferViewModel
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
-import com.ginoskos.biblomnemon.ui.theme.components.CardComponent
 import com.ginoskos.biblomnemon.ui.theme.components.LoadingComponent
 import com.ginoskos.biblomnemon.ui.theme.components.MessageComponent
 import org.koin.androidx.compose.koinViewModel
@@ -46,24 +48,43 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun SearchDetailScreen(navController: NavHostController) {
-    SubScreen (
-        navController = navController,
-        topBar = {
-            ScreenToolbar(onBack = {
-                navController.navigateBack()
-            })
-        }
-    ) {
-        val model: SearchDetailViewModel = koinViewModel()
-        val transfer: BookTransferViewModel = koinSharedViewModel()
-        val uiState by model.uiState.collectAsStateWithLifecycle()
+    val model: SearchDetailViewModel = koinViewModel()
+    val transfer: BookTransferViewModel = koinSharedViewModel()
+    val uiState by model.uiState.collectAsStateWithLifecycle()
 
-        LaunchedEffect(transfer) {
-            transfer.pop { item ->
-                model.fetch(item)
+    val imageTopHeight = (LocalConfiguration.current.screenHeightDp.dp * 0.35f)
+
+    LaunchedEffect(transfer) {
+        transfer.pop { item ->
+            model.fetch(item)
+        }
+    }
+
+    CollapsingScreen(
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(imageTopHeight - 20.dp)
+            ) {
+                ScreenToolbar(onBack = { navController.navigateBack() })
+            }
+        },
+        background = {
+            val state = uiState as? SearchDetailUiState.Success
+            if (state != null) with(state) {
+                AsyncImage(
+                    model = item?.covers?.getOrNull(BookCoverCoverType.MEDIUM.ordinal)
+                        ?: item?.covers?.getOrNull(BookCoverCoverType.SMALL.ordinal),
+                    contentDescription = item?.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(imageTopHeight)
+                )
             }
         }
-
+    ) {
         SearchDetailScreenContent(
             uiState = uiState,
             onAdd = { item ->
@@ -71,7 +92,6 @@ fun SearchDetailScreen(navController: NavHostController) {
                 navController.navigate(NavigationRoute.LibraryEdit)
             }
         )
-
     }
 }
 
@@ -111,18 +131,6 @@ fun SearchDetailScreenContent(
                         .verticalScroll(scroll),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    CardComponent(modifier = Modifier.fillMaxWidth()) {
-                        AsyncImage(
-                            model = item.coverUrls?.getOrNull(BookCoverCoverType.MEDIUM.ordinal) ?:
-                                item.coverUrls?.getOrNull(BookCoverCoverType.SMALL.ordinal),
-                            contentDescription = item.title,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            contentScale = ContentScale.FillWidth
-                        )
-                    }
-
                     Text(item.title, style = MaterialTheme.typography.displayLarge)
                     item.authors?.takeIf { it.isNotEmpty() }?.let {
                         Text(
@@ -166,16 +174,18 @@ fun SearchDetailScreenContent(
 @Composable
 private fun PreviewSearchDetailScreen() {
     BiblomnemonTheme {
-        SearchDetailScreenContent(
-            uiState = SearchDetailUiState.Success(
-                item = Book(
-                    id = "1",
-                    title = "A Brief History of Time",
-                    authors = listOf(Author(name = "Stephen Hawking")),
-                    description = "An overview of cosmology and black holes.",
-                    publishYear = 1988
+        ScreenWrapper {
+            SearchDetailScreenContent(
+                uiState = SearchDetailUiState.Success(
+                    item = Book(
+                        id = "1",
+                        title = "A Brief History of Time",
+                        authors = listOf(Author(name = "Stephen Hawking")),
+                        description = "An overview of cosmology and black holes.",
+                        publishYear = 1988
+                    )
                 )
             )
-        )
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.ginoskos.biblomnemon.ui.screens.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.nbaplayers.app.logger.ILogger
 import com.ginoskos.biblomnemon.data.entities.Book
 import com.ginoskos.biblomnemon.data.entities.mergeBlankWith
 import com.ginoskos.biblomnemon.data.repositories.IBooksRepository
@@ -17,17 +18,34 @@ data class LibraryEditUiState(
 
 class LibraryEditViewModel(
     private val localRepository: ILocalBooksRepository,
-    private val remoteRepository: IBooksRepository
+    private val remoteRepository: IBooksRepository,
+    private val logger: ILogger
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LibraryEditUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun update(book: Book) {
-        _uiState.value = _uiState.value.copy(item = book)
+    fun fetch(item: Book) {
+        viewModelScope.launch {
+            val result = localRepository.getById(item.id)
+            result.fold(
+                onSuccess = { local ->
+                    _uiState.value = _uiState.value.copy(
+                        item = local ?: item
+                    )
+                },
+                onFailure = { throwable ->
+                   logger.e(throwable, "Failed to fetch the book")
+                }
+            )
+        }
+    }
+
+    fun update(item: Book) {
+        _uiState.value = _uiState.value.copy(item = item)
     }
 
     fun setIsbn(isbn: String) {
-        update(book = _uiState.value.item.copy(isbn = isbn))
+        update(item = _uiState.value.item.copy(isbn = isbn))
 
         if (isbn.length == 10 || isbn.length == 13) {
             viewModelScope.launch {
@@ -40,18 +58,22 @@ class LibraryEditViewModel(
                             item = _uiState.value.item.mergeBlankWith(item!!)
                         )
                     },
-                    onFailure = {
+                    onFailure = { throwable ->
+                        logger.e(throwable, "Failed to fetch the book via ISBN")
                     }
                 )
             }
         }
     }
 
-    fun insert() {
+    fun store() {
         viewModelScope.launch {
-            localRepository.insert(
-                item = _uiState.value.item,
-            )
+            val local = localRepository.getById(_uiState.value.item.id).getOrNull()
+            if (local == null) {
+                localRepository.insert(item = _uiState.value.item)
+            } else {
+                localRepository.update(item = _uiState.value.item)
+            }
         }
     }
 }

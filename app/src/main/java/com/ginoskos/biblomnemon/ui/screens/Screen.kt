@@ -11,6 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -21,7 +22,8 @@ import com.ginoskos.biblomnemon.ui.theme.ThemeLayout
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppScreen(
+fun AppScreen(
+    containerColor: Color = MaterialTheme.colorScheme.background,
     topBar: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
     fab: @Composable () -> Unit = {},
@@ -33,7 +35,8 @@ private fun AppScreen(
         bottomBar = bottomBar,
         floatingActionButton = fab,
         snackbarHost = snackBar,
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = containerColor,
+        contentColor = MaterialTheme.colorScheme.onBackground,
     ) { padding ->
         content(padding)
     }

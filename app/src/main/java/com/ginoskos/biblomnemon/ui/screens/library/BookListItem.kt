@@ -32,7 +32,7 @@ fun BookListItem(item: Book, onClick: () -> Unit = {}) {
     ) {
         Row(modifier = Modifier.padding(12.dp)) {
             AsyncImage(
-                model = item.coverUrls?.firstOrNull(),
+                model = item.covers?.firstOrNull(),
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 placeholder = painterResource(R.drawable.ic_book),

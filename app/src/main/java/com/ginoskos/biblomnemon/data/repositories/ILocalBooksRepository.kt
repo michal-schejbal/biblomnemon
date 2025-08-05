@@ -4,5 +4,6 @@ import com.ginoskos.biblomnemon.data.entities.Book
 
 interface ILocalBooksRepository : IBooksRepository {
     suspend fun insert(item: Book): Result<Unit>
+    suspend fun update(item: Book): Result<Unit>
     suspend fun delete(item: Book): Result<Unit>
 }

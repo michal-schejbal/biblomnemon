@@ -12,6 +12,12 @@ interface BookDao {
     @Query("SELECT * FROM ${BookEntity.NAME}")
     suspend fun fetch(): List<BookEntity>
 
+    @Query("SELECT * FROM ${BookEntity.NAME} WHERE id = :id LIMIT 1")
+    suspend fun getById(id: String): BookEntity?
+
+    @Query("SELECT * FROM ${BookEntity.NAME} WHERE id = :isbn LIMIT 1")
+    suspend fun getByIsbn(isbn: String): BookEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(book: BookEntity)
 
