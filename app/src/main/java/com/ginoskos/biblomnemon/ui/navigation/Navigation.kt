@@ -1,73 +1,70 @@
 package com.ginoskos.biblomnemon.ui.navigation
 
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.ginoskos.biblomnemon.core.app.NavigationItems
-import com.ginoskos.biblomnemon.ui.screens.IScreen
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.ginoskos.biblomnemon.R
 import com.ginoskos.biblomnemon.ui.screens.home.HomeScreen
 import com.ginoskos.biblomnemon.ui.screens.library.LibraryEditScreen
-import com.ginoskos.biblomnemon.ui.screens.scanner.ScanScreen
+import com.ginoskos.biblomnemon.ui.screens.library.LibraryScreen
+import com.ginoskos.biblomnemon.ui.screens.scanner.ScannerScreen
 import com.ginoskos.biblomnemon.ui.screens.search.SearchDetailScreen
-import kotlinx.coroutines.flow.collectLatest
+import com.ginoskos.biblomnemon.ui.screens.search.SearchScreen
+import kotlinx.serialization.Serializable
 
-private val screens = NavigationItems.entries.map { it.screen } + listOf(
-    LibraryEditScreen,
-    SearchDetailScreen,
-    ScanScreen
-)
 
-@Composable
-fun NavigationGraph(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = HomeScreen.Identifier) {
-        screens.forEach { screen ->
-            screen.register(this, navController)
-        }
-    }
+@Serializable
+sealed class NavigationRoute {
+    @Serializable data object Home : NavigationRoute()
+
+    @Serializable data object Scanner : NavigationRoute()
+
+    @Serializable data object Library : NavigationRoute()
+    @Serializable data object LibraryEdit : NavigationRoute()
+
+    @Serializable data object Search : NavigationRoute()
+    @Serializable data object SearchDetail : NavigationRoute()
 }
 
-@Composable
-fun currentScreenByRoute(
-    navController: NavHostController
-): IScreen? {
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val route = backStackEntry?.destination?.route
-
-    if (route == null) {
-        return null
-    }
-
-    return screens.firstOrNull { screen ->
-        route.contains(screen::class.simpleName ?: "")
-    }
-}
-
-/**
- * Observe a navigation result directly inside a Composable.
- *
- * This automatically ties collection to the Composable's lifecycle.
- *
- * Once consumed, it automatically clears the value in SavedStateHandle
- * to avoid re-triggering on recomposition or process recreation.
- */
-@Composable
-inline fun <reified T> NavController.ObserveResult(
-    key: String,
-    crossinline onResult: (T) -> Unit
+enum class BottomNavigationItems(
+    val route: NavigationRoute,
+    @param:StringRes val titleRes: Int,
+    @param:DrawableRes val iconRes: Int? = null
 ) {
-    val backStackEntry = currentBackStackEntry
-    LaunchedEffect(backStackEntry) {
-        backStackEntry?.savedStateHandle
-            ?.getStateFlow<T?>(key, null)
-            ?.collectLatest { value ->
-                if (value != null) {
-                    onResult(value)
-                    backStackEntry.savedStateHandle.set<T?>(key, null)
-                }
-            }
+    Home(NavigationRoute.Home, R.string.nav_home, R.drawable.ic_home),
+    Library(NavigationRoute.Library, R.string.nav_library, R.drawable.ic_library),
+}
+
+@Composable
+fun NavigationScreens() {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = NavigationRoute.Home) {
+        composable<NavigationRoute.Home> {
+            HomeScreen(navController)
+        }
+
+        composable<NavigationRoute.Scanner> {
+            ScannerScreen(navController)
+        }
+
+        // Search
+        composable<NavigationRoute.Search> {
+            SearchScreen(navController)
+        }
+        composable<NavigationRoute.SearchDetail> {
+            SearchDetailScreen(navController)
+        }
+
+        // Library
+        composable<NavigationRoute.Library> {
+            LibraryScreen(navController)
+        }
+        composable<NavigationRoute.LibraryEdit> {
+            LibraryEditScreen(navController)
+        }
+
     }
 }

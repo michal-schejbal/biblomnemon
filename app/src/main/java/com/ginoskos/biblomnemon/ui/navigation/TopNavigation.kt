@@ -18,7 +18,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.ginoskos.biblomnemon.R
-import com.ginoskos.biblomnemon.ui.screens.search.SearchScreen
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 import com.ginoskos.biblomnemon.ui.theme.Surface
 import com.ginoskos.biblomnemon.ui.theme.components.CircleIconComponent
@@ -38,7 +37,7 @@ fun TopNavigation(
         },
         actions = {
             IconButton(onClick = {
-                navController.navigate(SearchScreen.Identifier)
+                navController.navigate(NavigationRoute.Search)
             }) {
                 CircleIconComponent(
                     icon = Icons.Default.Search,

@@ -7,12 +7,11 @@ import com.ginoskos.biblomnemon.data.entities.mergeBlankWith
 import com.ginoskos.biblomnemon.data.repositories.IBooksRepository
 import com.ginoskos.biblomnemon.data.repositories.ILocalBooksRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class LibraryEditUiState(
-    val book: Book = Book(id = "", title = ""),
+    val item: Book = Book(id = "", title = ""),
     val loading: Boolean = false
 )
 
@@ -20,16 +19,15 @@ class LibraryEditViewModel(
     private val localRepository: ILocalBooksRepository,
     private val remoteRepository: IBooksRepository
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(LibraryEditUiState())
-    val uiState: StateFlow<LibraryEditUiState> = _uiState.asStateFlow()
+    val uiState = _uiState.asStateFlow()
 
     fun update(book: Book) {
-        _uiState.value = _uiState.value.copy(book = book)
+        _uiState.value = _uiState.value.copy(item = book)
     }
 
     fun setIsbn(isbn: String) {
-        update(book = _uiState.value.book.copy(isbn = isbn))
+        update(book = _uiState.value.item.copy(isbn = isbn))
 
         if (isbn.length == 10 || isbn.length == 13) {
             viewModelScope.launch {
@@ -39,7 +37,7 @@ class LibraryEditViewModel(
                 result.fold(
                     onSuccess = { item ->
                         _uiState.value = _uiState.value.copy(
-                            book = _uiState.value.book.mergeBlankWith(item!!)
+                            item = _uiState.value.item.mergeBlankWith(item!!)
                         )
                     },
                     onFailure = {
@@ -52,7 +50,7 @@ class LibraryEditViewModel(
     fun insert() {
         viewModelScope.launch {
             localRepository.insert(
-                item = _uiState.value.book,
+                item = _uiState.value.item,
             )
         }
     }

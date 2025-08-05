@@ -37,60 +37,75 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
 import com.ginoskos.biblomnemon.R
-import com.ginoskos.biblomnemon.core.app.navigateBack
-import com.ginoskos.biblomnemon.core.app.returnResult
-import com.ginoskos.biblomnemon.core.scanner.IBarcodeScanner
-import com.ginoskos.biblomnemon.ui.screens.IScreen
-import com.ginoskos.biblomnemon.ui.screens.Screen
-import com.ginoskos.biblomnemon.ui.screens.ScreenScaffoldHoist
-import com.ginoskos.biblomnemon.ui.screens.ScreenToolbar
-import com.ginoskos.biblomnemon.ui.screens.ScreenWrapper
+import com.ginoskos.biblomnemon.ui.navigation.ScreenToolbar
+import com.ginoskos.biblomnemon.ui.navigation.navigateBack
+import com.ginoskos.biblomnemon.ui.navigation.returnResult
+import com.ginoskos.biblomnemon.ui.screens.SubScreen
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 import com.ginoskos.biblomnemon.ui.theme.components.CardComponent
 import com.ginoskos.biblomnemon.ui.theme.components.MessageComponent
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
 
-@Screen
-object ScanScreen : IScreen {
-    @Serializable object Identifier
-    const val SCANNED_ISBN = "scanned_isbn"
-    override val identifier: Any get() = Identifier
+const val SCANNED_ISBN = "scanned_isbn"
 
-    override val hoist = ScreenScaffoldHoist(
-        topBar = { navController ->
-            val model: ScanViewModel = koinViewModel()
-            val context = LocalContext.current
+@Composable
+fun ScannerScreen(navController: NavHostController) {
+    val model: ScannerViewModel = koinViewModel()
+    val uiState by model.uiState.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
 
-            LaunchedEffect(model) {
-                model.events.collect { event ->
-                    when (event) {
-                        ScanUiEvent.NavigateBack -> {
-                            navController.navigateBack()
-                        }
-                        ScanUiEvent.OpenSettings -> {
-                            Intent(
-                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                Uri.fromParts("package", context.packageName, null)
-                            ).apply {
-                                context.startActivity(this)
-                            }
-                        }
-                        else -> {}
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        model.onEvent(ScannerUiEvent.PermissionResult(granted))
+    }
+
+    LaunchedEffect(model) {
+        model.events.collect { event ->
+            when (event) {
+                ScannerUiEvent.NavigateBack -> {
+                    navController.navigateBack()
+                }
+                ScannerUiEvent.OpenSettings -> {
+                    Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.fromParts("package", context.packageName, null)
+                    ).apply {
+                        context.startActivity(this)
                     }
                 }
+                ScannerUiEvent.PermissionRequest -> {
+                    launcher.launch(Manifest.permission.CAMERA)
+                }
+                is ScannerUiEvent.PermissionResult -> {
+                    model.onPermissionGranted(event.granted)
+                }
+                is ScannerUiEvent.PreviewReady ->  {
+                    model.onPreviewReady(event.previewView, lifecycleOwner)
+                }
+                is ScannerUiEvent.ScannedResult -> {
+                    navController.returnResult(SCANNED_ISBN, event.isbn)
+                }
             }
+        }
+    }
 
-            ScreenToolbar(onBack = { model.onEvent(ScanUiEvent.NavigateBack) }) {
-                IconButton(onClick = { model.onEvent(ScanUiEvent.OpenSettings) }) {
+    DisposableEffect(Unit) {
+        onDispose {
+            model.stopScanning()
+        }
+    }
+
+    SubScreen(
+        navController = navController,
+        topBar = {
+            ScreenToolbar(onBack = { model.onEvent(ScannerUiEvent.NavigateBack) }) {
+                IconButton(onClick = { model.onEvent(ScannerUiEvent.OpenSettings) }) {
                     Icon(
                         painter = painterResource(R.drawable.ic_settings),
                         contentDescription = stringResource(id = R.string.scan_settings_content_desc),
@@ -98,68 +113,30 @@ object ScanScreen : IScreen {
                     )
                 }
             }
-        },
-        bottomBar = {}
-    )
-
-    override fun register(builder: NavGraphBuilder, navController: NavHostController) {
-        builder.composable<Identifier> {
-            val model: ScanViewModel = koinViewModel()
-            val uiState by model.uiState.collectAsStateWithLifecycle()
-            val lifecycleOwner = LocalLifecycleOwner.current
-
-
-            val launcher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.RequestPermission()
-            ) { granted ->
-                model.onEvent(ScanUiEvent.PermissionResult(granted))
-            }
-
-            LaunchedEffect(model) {
-                model.events.collect { event ->
-                    when (event) {
-                        ScanUiEvent.PermissionRequest -> {
-                            launcher.launch(Manifest.permission.CAMERA)
-                        }
-                        is ScanUiEvent.PermissionResult -> {
-                            model.onPermissionGranted(event.granted)
-                        }
-                        is ScanUiEvent.PreviewReady ->  {
-                            model.onPreviewReady(event.previewView, lifecycleOwner)
-                        }
-                        is ScanUiEvent.ScannedResult -> {
-                            navController.returnResult(SCANNED_ISBN, event.isbn)
-                        }
-                        else -> {}
-                    }
-                }
-            }
-
-            DisposableEffect(Unit) {
-                onDispose {
-                    model.stopScanning()
-                }
-            }
-
-            ScreenWrapper {
-                ScanScreenContent(
-                    uiState,
-                    model = model
-                )
-            }
         }
+    ) {
+        ScanScreenContent(
+            uiState,
+            onPermissionRequest = {
+                model.onEvent(ScannerUiEvent.PermissionRequest)
+            },
+            onPreviewReady = { preview ->
+                model.onEvent(ScannerUiEvent.PreviewReady(preview))
+            }
+        )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScanScreenContent(
-    uiState: ScanUiState,
-    model: ScanViewModel
+    uiState: ScannerUiState,
+    onPermissionRequest: () -> Unit = {},
+    onPreviewReady: (PreviewView) -> Unit = { },
 ) {
     when (uiState) {
-        ScanUiState.PermissionDenied,
-        ScanUiState.PermissionRequest -> {
+        ScannerUiState.PermissionDenied,
+        ScannerUiState.PermissionRequest -> {
             Box(
                 modifier = Modifier
                     .fillMaxSize(),
@@ -178,7 +155,7 @@ fun ScanScreenContent(
 
                     Button(
                         modifier = Modifier.alpha(0.6f),
-                        onClick = { model.onEvent(ScanUiEvent.PermissionRequest) }
+                        onClick = { onPermissionRequest() }
                     ) {
                         Text(stringResource(id = R.string.scan_permission_button))
                     }
@@ -186,7 +163,7 @@ fun ScanScreenContent(
             }
         }
 
-        ScanUiState.Scanning -> {
+        ScannerUiState.Scanning -> {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -226,7 +203,7 @@ fun ScanScreenContent(
                                         PreviewView.ImplementationMode.COMPATIBLE
                                     scaleType = PreviewView.ScaleType.FILL_CENTER
                                     post {
-                                        model.onEvent(ScanUiEvent.PreviewReady(this))
+                                        onPreviewReady(this)
                                     }
                                 }
                             }
@@ -236,7 +213,7 @@ fun ScanScreenContent(
             }
         }
 
-        is ScanUiState.Scanned -> {
+        is ScannerUiState.Scanned -> {
             // Handled in LaunchedEffect
         }
     }
@@ -248,12 +225,7 @@ fun ScanScreenContent(
 fun ScanScreenRequestPermissionPreview() {
     BiblomnemonTheme {
         ScanScreenContent(
-            uiState = ScanUiState.PermissionRequest,
-            model = ScanViewModel(object : IBarcodeScanner {
-                override val codes = emptyFlow<String>()
-                override fun start(previewView: PreviewView, lifecycleOwner: LifecycleOwner) {}
-                override fun stop() {}
-            })
+            uiState = ScannerUiState.PermissionRequest
         )
     }
 }
@@ -264,12 +236,7 @@ fun ScanScreenRequestPermissionPreview() {
 fun ScanScreenScanningPreview() {
     BiblomnemonTheme {
         ScanScreenContent(
-            uiState = ScanUiState.Scanning,
-            model = ScanViewModel(object : IBarcodeScanner {
-                override val codes = emptyFlow<String>()
-                override fun start(previewView: PreviewView, lifecycleOwner: LifecycleOwner) {}
-                override fun stop() {}
-            })
+            uiState = ScannerUiState.Scanning
         )
     }
 }
@@ -280,12 +247,7 @@ fun ScanScreenScanningPreview() {
 fun ScanScreenScannedPreview() {
     BiblomnemonTheme {
         ScanScreenContent(
-            uiState = ScanUiState.Scanned(isbn = "9780306406157"),
-            model = ScanViewModel(object : IBarcodeScanner {
-                override val codes = emptyFlow<String>()
-                override fun start(previewView: PreviewView, lifecycleOwner: LifecycleOwner) {}
-                override fun stop() {}
-            })
+            uiState = ScannerUiState.Scanned(isbn = "9780306406157")
         )
     }
 }

@@ -17,7 +17,6 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import org.koin.java.KoinJavaComponent.inject
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -29,10 +28,9 @@ import java.util.concurrent.Executors
  * - Call startScanning() when ready, stopScanning() when done.
  */
 class MLKitBarcodeScanner(
-    private val context: Context
+    private val context: Context,
+    private val logger: ILogger
 ) : IBarcodeScanner {
-    private val logger: ILogger by inject(ILogger::class.java)
-
     private val _codes = MutableSharedFlow<String>(extraBufferCapacity = 1)
     override val codes = _codes.asSharedFlow()
 

@@ -30,8 +30,7 @@ data class GoogleVolumeInfo(
     val publisher: String?,
     val description: String?,
     val pageCount: Int?,
-    val categories: List<String>?,
-    val mainCategory: String?
+    val categories: List<String>?
 )
 
 data class GoogleImageLinks(
@@ -57,18 +56,17 @@ fun GoogleBookItem.toDomain(): Book? {
             .joinToString(separator = ": "),
         description = info.description,
         authors = info.authors?.map { Author(name = it) },
-        isbn = info.industryIdentifiers?.firstOrNull { it.type?.startsWith("ISBN") == true }?.identifier,
+        isbn = info.industryIdentifiers?.lastOrNull() { it.type?.startsWith("ISBN") == true }?.identifier,
         language = info.language,
         coverUrls = buildList {
-            info.imageLinks?.small?.let { add(it.forceHttps()) }
+            info.imageLinks?.small?.let { add(it.forceHttps()) } ?:
+                info.imageLinks?.thumbnail?.let { add(it.forceHttps()) }
             info.imageLinks?.medium?.let { add(it.forceHttps()) }
             info.imageLinks?.large?.let { add(it.forceHttps()) }
         }.ifEmpty { null },
         publishYear = info.extractPublishYear(),
         publisher = info.publisher,
-        pageCount = info.pageCount,
-        categories = info.categories,
-        mainCategory = info.categories?.firstOrNull()
+        pageCount = info.pageCount
     )
 }
 

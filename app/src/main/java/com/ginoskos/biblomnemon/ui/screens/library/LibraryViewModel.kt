@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import org.koin.java.KoinJavaComponent.inject
 
 sealed class LibraryUiState {
     data object Empty : LibraryUiState()
@@ -27,9 +26,9 @@ sealed class LibraryUiState {
 
 @OptIn(FlowPreview::class)
 class LibraryViewModel(
-    private val repository: ILocalBooksRepository
+    private val repository: ILocalBooksRepository,
+    private val logger: ILogger
 ) : ViewModel() {
-    private val logger: ILogger by inject(ILogger::class.java)
     private var job: Job? = null
 
     private val _uiState = MutableStateFlow<LibraryUiState>(LibraryUiState.Empty)

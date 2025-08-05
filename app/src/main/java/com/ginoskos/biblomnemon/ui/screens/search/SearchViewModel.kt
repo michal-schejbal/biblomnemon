@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import org.koin.java.KoinJavaComponent.inject
 
 sealed class SearchUiState {
     data object Empty : SearchUiState()
@@ -26,9 +25,9 @@ sealed class SearchUiState {
 
 @OptIn(FlowPreview::class)
 class SearchViewModel(
-    private val repository: IBooksRepository
+    private val repository: IBooksRepository,
+    private val logger: ILogger
 ) : ViewModel() {
-    private val logger: ILogger by inject(ILogger::class.java)
     private var job: Job? = null
 
     private val _uiState = MutableStateFlow<SearchUiState>(SearchUiState.Empty)

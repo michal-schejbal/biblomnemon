@@ -1,12 +1,13 @@
-package com.ginoskos.biblomnemon.data.repositories.storage.database
+package com.ginoskos.biblomnemon.data.repositories.storage.database.books
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.ginoskos.biblomnemon.data.entities.Author
 import com.ginoskos.biblomnemon.data.entities.Book
 import com.ginoskos.biblomnemon.data.entities.BookSource
+import com.ginoskos.biblomnemon.data.entities.Category
 
-@Entity(tableName = "books")
+@Entity(tableName = BookEntity.NAME)
 data class BookEntity(
     @PrimaryKey val id: String,
     val source: BookSource = BookSource.MANUAL,
@@ -19,8 +20,12 @@ data class BookEntity(
     val publishYear: Int?,
     val publisher: String?,
     val pageCount: Int?,
-    val categories: List<String>?
-)
+    val categories: List<Category>?
+) {
+    companion object {
+        const val NAME = "books"
+    }
+}
 
 fun Book.toEntity() = BookEntity(
     id = id,

@@ -24,33 +24,27 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
 import com.ginoskos.biblomnemon.R
 import com.ginoskos.biblomnemon.data.entities.Author
 import com.ginoskos.biblomnemon.data.entities.Book
-import com.ginoskos.biblomnemon.ui.screens.IScreen
-import com.ginoskos.biblomnemon.ui.screens.Screen
-import com.ginoskos.biblomnemon.ui.screens.ScreenScaffoldHoist
-import com.ginoskos.biblomnemon.ui.screens.ScreenWrapper
-import com.ginoskos.biblomnemon.ui.screens.snippets.BookListItem
+import com.ginoskos.biblomnemon.ui.navigation.NavigationRoute
+import com.ginoskos.biblomnemon.ui.screens.MainScreen
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 import com.ginoskos.biblomnemon.ui.theme.ThemeLayout
 import com.ginoskos.biblomnemon.ui.theme.components.LoadingComponent
 import com.ginoskos.biblomnemon.ui.theme.components.MessageComponent
-import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
 
-@Screen
-object LibraryScreen : IScreen {
-    @Serializable object Identifier
-    override val identifier: Any get() = Identifier
 
-    override val hoist = ScreenScaffoldHoist(
-        fab = { navController ->
+@Composable
+fun LibraryScreen(navController: NavHostController) {
+    MainScreen(
+        navController = navController,
+        title = stringResource(id = R.string.nav_library),
+        fab = {
             FloatingActionButton(
-                onClick = { navController.navigate(LibraryEditScreen.Identifier) },
+                onClick = { navController.navigate(NavigationRoute.LibraryEdit) },
                 containerColor = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .padding(ThemeLayout.offset)
@@ -62,31 +56,27 @@ object LibraryScreen : IScreen {
                 )
             }
         }
-    )
+    ) {
+        val model: LibraryViewModel = koinViewModel()
+        val uiState by model.uiState.collectAsStateWithLifecycle()
+        val transfer: BookTransferViewModel = koinViewModel()
+        val query by model.query.collectAsStateWithLifecycle()
 
-    override fun register(builder: NavGraphBuilder, navController: NavHostController) {
-        builder.composable<Identifier> {
-            val model: LibraryViewModel = koinViewModel()
-            val uiState by model.uiState.collectAsStateWithLifecycle()
-            val query by model.query.collectAsStateWithLifecycle()
-
-            LaunchedEffect(Unit) {
-                model.fetch()
-            }
-
-            ScreenWrapper {
-                LibraryScreenContent(
-                    uiState = uiState,
-                    query = query,
-                    onQueryChange = model::onQueryChange,
-                    onQueryClear = model::onQueryClear,
-                    onClick = { book ->
-                    },
-                )
-            }
+        LaunchedEffect(Unit) {
+            model.fetch()
         }
-    }
 
+        LibraryScreenContent(
+            uiState = uiState,
+            query = query,
+            onQueryChange = model::onQueryChange,
+            onQueryClear = model::onQueryClear,
+            onClick = { item ->
+                transfer.put(item)
+                navController.navigate(NavigationRoute.LibraryEdit)
+            },
+        )
+    }
 }
 
 @Composable

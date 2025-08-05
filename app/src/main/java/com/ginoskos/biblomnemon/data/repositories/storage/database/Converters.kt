@@ -3,6 +3,7 @@ package com.ginoskos.biblomnemon.data.repositories.storage.database
 import androidx.room.TypeConverter
 import com.ginoskos.biblomnemon.data.entities.Author
 import com.ginoskos.biblomnemon.data.entities.BookSource
+import com.ginoskos.biblomnemon.data.entities.Category
 import kotlinx.serialization.json.Json
 
 object Converters {
@@ -25,4 +26,10 @@ object Converters {
 
     @TypeConverter
     fun toAuthors(value: String?): List<Author>? = value?.let { json.decodeFromString(it) }
+
+    @TypeConverter
+    fun fromCategories(value: List<Category>?): String? = value?.let { json.encodeToString(it) }
+
+    @TypeConverter
+    fun toCategories(value: String?): List<Category>? = value?.let { json.decodeFromString(it) }
 }

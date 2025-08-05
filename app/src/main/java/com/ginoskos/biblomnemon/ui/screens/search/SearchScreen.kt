@@ -28,61 +28,55 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.ginoskos.biblomnemon.R
+import com.ginoskos.biblomnemon.core.koinSharedViewModel
 import com.ginoskos.biblomnemon.data.entities.Author
 import com.ginoskos.biblomnemon.data.entities.Book
+import com.ginoskos.biblomnemon.ui.navigation.NavigationRoute
 import com.ginoskos.biblomnemon.ui.navigation.ObserveResult
-import com.ginoskos.biblomnemon.ui.screens.IScreen
-import com.ginoskos.biblomnemon.ui.screens.Screen
-import com.ginoskos.biblomnemon.ui.screens.ScreenScaffoldHoist
+import com.ginoskos.biblomnemon.ui.screens.MainScreen
 import com.ginoskos.biblomnemon.ui.screens.ScreenWrapper
-import com.ginoskos.biblomnemon.ui.screens.scanner.ScanScreen
-import com.ginoskos.biblomnemon.ui.screens.snippets.BookListItem
+import com.ginoskos.biblomnemon.ui.screens.library.BookListItem
+import com.ginoskos.biblomnemon.ui.screens.library.BookTransferViewModel
+import com.ginoskos.biblomnemon.ui.screens.scanner.SCANNED_ISBN
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 import com.ginoskos.biblomnemon.ui.theme.components.LoadingComponent
 import com.ginoskos.biblomnemon.ui.theme.components.MessageComponent
-import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
 
 
-@Screen
-object SearchScreen : IScreen {
-    @Serializable object Identifier
-    override val identifier: Any get() = Identifier
-    override val hoist = ScreenScaffoldHoist()
+@Composable
+fun SearchScreen(navController: NavHostController) {
+    MainScreen(
+        navController = navController,
+        title = stringResource(id = R.string.nav_search),
+    ) {
+        val model: SearchViewModel = koinViewModel()
+        val transfer: BookTransferViewModel = koinSharedViewModel()
+        val uiState by model.uiState.collectAsStateWithLifecycle()
+        val query by model.query.collectAsStateWithLifecycle()
 
-    override fun register(builder: NavGraphBuilder, navController: NavHostController) {
-        builder.composable<Identifier> {
-            val args = it.toRoute<Identifier>()
-            val model: SearchViewModel = koinViewModel()
-            val uiState by model.uiState.collectAsStateWithLifecycle()
-            val query by model.query.collectAsStateWithLifecycle()
-
-            navController.ObserveResult<String>(ScanScreen.SCANNED_ISBN) { isbn ->
-                model.onQueryChange("isbn:$isbn")
-            }
-
-            ScreenWrapper {
-                SearchScreenContent(
-                    uiState = uiState,
-                    query = query,
-                    onQueryChange = model::onQueryChange,
-                    onQueryClear = model::onQueryClear,
-                    onClick = { book ->
-                        navController.navigate(SearchDetailScreen.Identifier(book.id))
-                    },
-                    onScanClick = {
-                        navController.navigate(ScanScreen.Identifier)
-                    }
-                )
-            }
+        navController.ObserveResult<String>(SCANNED_ISBN) { isbn ->
+            model.onQueryChange("isbn:$isbn")
         }
+
+        SearchScreenContent(
+            uiState = uiState,
+            query = query,
+            onQueryChange = model::onQueryChange,
+            onQueryClear = model::onQueryClear,
+            onClick = { item ->
+                transfer.put(item)
+                navController.navigate(NavigationRoute.SearchDetail)
+            },
+            onScanClick = {
+                navController.navigate(NavigationRoute.Scanner)
+            }
+        )
     }
 }
+
 
 @Composable
 fun SearchScreenContent(

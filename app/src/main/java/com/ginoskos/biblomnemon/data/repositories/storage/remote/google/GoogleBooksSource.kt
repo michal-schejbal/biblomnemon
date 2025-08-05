@@ -26,7 +26,9 @@ class GoogleBooksSource(
     }
 
     override suspend fun getById(id: String): Result<Book?> = withContext(dispatcher.io) {
-        safeApiCall { api.getById(id) }.map { it.toDomain() }
+        safeApiCall {
+            api.getById(id)
+        }.map { it.toDomain() }
     }
 
     override suspend fun getByIsbn(isbn: String): Result<Book?> = withContext(dispatcher.io) {

@@ -1,4 +1,4 @@
-package com.ginoskos.biblomnemon.ui.screens.snippets
+package com.ginoskos.biblomnemon.ui.screens.library
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column

@@ -13,29 +13,26 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.ginoskos.biblomnemon.core.app.NavigationItems
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 
-private val bottomNavigationItems = listOf(
-    NavigationItems.Home, NavigationItems.Library
-)
+
 
 @Composable
 fun BottomNavigation(
     navController: NavHostController
 ) {
-    val selected = currentScreenByRoute(navController) ?: NavigationItems.Home
+    val selected = currentScreenByRoute(navController) ?: BottomNavigationItems.Home
 
     Surface(shadowElevation = 8.dp) {
         NavigationBar(
             containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
-            bottomNavigationItems.forEach { item ->
+            BottomNavigationItems.entries.forEach { item ->
                 NavigationBarItem(
-                    selected = item.screen == selected,
+                    selected = item.route == selected,
                     onClick = {
-                        navController.navigate(item.screen.identifier)
+                        navController.navigate(item.route)
                     },
                     icon = { item.iconRes?.let {
                         Icon(painter = painterResource(id = item.iconRes), contentDescription = stringResource(id = item.titleRes))

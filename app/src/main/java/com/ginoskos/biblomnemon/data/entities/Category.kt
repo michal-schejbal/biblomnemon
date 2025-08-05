@@ -3,8 +3,7 @@ package com.ginoskos.biblomnemon.data.entities
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class BookSource() {
-    GOOGLE,
-    OPEN_LIBRARY,
-    MANUAL
-}
+data class Category(
+    val id: Long? = null,
+    val title: String? = null
+)

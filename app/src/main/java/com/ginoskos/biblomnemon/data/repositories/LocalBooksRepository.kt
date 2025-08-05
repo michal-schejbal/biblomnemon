@@ -2,9 +2,9 @@ package com.ginoskos.biblomnemon.data.repositories
 
 import com.example.nbaplayers.model.IDispatcherProvider
 import com.ginoskos.biblomnemon.data.entities.Book
-import com.ginoskos.biblomnemon.data.repositories.storage.database.BookDao
-import com.ginoskos.biblomnemon.data.repositories.storage.database.toDomain
-import com.ginoskos.biblomnemon.data.repositories.storage.database.toEntity
+import com.ginoskos.biblomnemon.data.repositories.storage.database.books.BookDao
+import com.ginoskos.biblomnemon.data.repositories.storage.database.books.toDomain
+import com.ginoskos.biblomnemon.data.repositories.storage.database.books.toEntity
 import kotlinx.coroutines.withContext
 
 class LocalBooksRepository(
@@ -15,7 +15,7 @@ class LocalBooksRepository(
     override suspend fun fetch(limit: Int, offset: Int): Result<List<Book>> =
         withContext(dispatcher.io) {
             safeDbCall {
-                source.getAll()
+                source.fetch()
                     .map { it.toDomain() }
             }
         }

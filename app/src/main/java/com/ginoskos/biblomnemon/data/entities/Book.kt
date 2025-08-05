@@ -1,9 +1,13 @@
 package com.ginoskos.biblomnemon.data.entities
 
+import kotlinx.serialization.Serializable
+
+
 enum class BookCoverCoverType {
     SMALL, MEDIUM, LARGE
 }
 
+@Serializable
 data class Book(
     val id: String,
     val source: BookSource = BookSource.MANUAL,
@@ -16,8 +20,7 @@ data class Book(
     val publishYear: Int? = null,
     val publisher: String? = null,
     val pageCount: Int? = null,
-    val categories: List<String>? = null,
-    val mainCategory: String? = null
+    val categories: List<Category>? = null
 )
 
 fun Book.mergeBlankWith(other: Book): Book = copy(
@@ -31,7 +34,6 @@ fun Book.mergeBlankWith(other: Book): Book = copy(
     publisher = publisher ?: other.publisher,
     pageCount = pageCount ?: other.pageCount,
     categories = if (categories.isNullOrEmpty()) other.categories else categories,
-    mainCategory = mainCategory ?: other.mainCategory
 )
 
 fun List<Book>.groupByInitialChar(): Map<Char, List<Book>> =  groupBy {

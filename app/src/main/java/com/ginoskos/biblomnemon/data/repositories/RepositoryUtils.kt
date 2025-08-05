@@ -1,7 +1,7 @@
 package com.ginoskos.biblomnemon.data.repositories
 
 import com.example.nbaplayers.app.logger.ILogger
-import org.koin.java.KoinJavaComponent.inject
+import org.koin.core.context.GlobalContext
 import retrofit2.HttpException
 import retrofit2.Response
 import kotlin.coroutines.cancellation.CancellationException
@@ -17,7 +17,7 @@ import kotlin.coroutines.cancellation.CancellationException
  * @return A [Result] wrapping the success or failure of the block.
  */
 suspend inline fun <T> runCatchingCancellable(crossinline block: suspend () -> T): Result<T> {
-    val logger: ILogger by inject(ILogger::class.java)
+    val logger = GlobalContext.get().get<ILogger>()
     return try {
         logger.d("runCatchingCancellable: Starting block execution.")
         val value = block()
@@ -46,7 +46,7 @@ suspend inline fun <T> runCatchingCancellable(crossinline block: suspend () -> T
  * @throws Exception If the response body is null.
  */
 suspend inline fun <T> safeApiCall(crossinline block: suspend () -> Response<T>): Result<T> {
-    val logger: ILogger by inject(ILogger::class.java)
+    val logger = GlobalContext.get().get<ILogger>()
     return runCatchingCancellable {
         logger.d("Performing API call...")
         val response = block()
@@ -63,7 +63,7 @@ suspend inline fun <T> safeApiCall(crossinline block: suspend () -> Response<T>)
 suspend inline fun <T> safeDbCall(
     crossinline block: suspend () -> T
 ): Result<T> {
-    val logger: ILogger by inject(ILogger::class.java)
+    val logger = GlobalContext.get().get<ILogger>()
     return runCatchingCancellable {
         logger.d("Performing DB call...")
         val result = block()
