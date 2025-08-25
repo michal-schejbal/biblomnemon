@@ -1,7 +1,7 @@
 package com.ginoskos.biblomnemon.data.repositories
 
 import com.ginoskos.biblomnemon.data.entities.Category
-import com.ginoskos.biblomnemon.data.repositories.storage.database.categories.BookCategoryRelations
+import com.ginoskos.biblomnemon.data.storage.database.categories.BookCategoryRelations
 
 interface ILocalCategoriesRepository {
     suspend fun fetch(limit: Int = Int.MAX_VALUE, offset: Int = 0): Result<List<Category>>

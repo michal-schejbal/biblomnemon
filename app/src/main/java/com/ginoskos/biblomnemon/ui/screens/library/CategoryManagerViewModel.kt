@@ -7,7 +7,7 @@ import com.example.nbaplayers.app.logger.ILogger
 import com.ginoskos.biblomnemon.R
 import com.ginoskos.biblomnemon.data.entities.Category
 import com.ginoskos.biblomnemon.data.repositories.ILocalCategoriesRepository
-import com.ginoskos.biblomnemon.data.repositories.storage.database.categories.BookCategoryRelations
+import com.ginoskos.biblomnemon.data.storage.database.categories.BookCategoryRelations
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -192,10 +192,12 @@ class CategoryManagerViewModel(
                         )
                     )
                 } else {
-                    repository.insertRelation(BookCategoryRelations(
-                        bookId = bookId,
-                        categoryId = category.id!!
-                    ))
+                    repository.insertRelation(
+                        BookCategoryRelations(
+                            bookId = bookId,
+                            categoryId = category.id!!
+                        )
+                    )
                 }
 
                 result.fold(

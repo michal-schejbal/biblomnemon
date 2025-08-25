@@ -4,25 +4,39 @@ import com.example.nbaplayers.app.logger.ILogger
 import com.example.nbaplayers.app.logger.TimberLogger
 import com.example.nbaplayers.model.AppDispatcherProvider
 import com.example.nbaplayers.model.IDispatcherProvider
+import com.ginoskos.biblomnemon.core.Config
+import com.ginoskos.biblomnemon.core.settings.ISettings
+import com.ginoskos.biblomnemon.core.settings.Settings
+import com.ginoskos.biblomnemon.core.auth.ITokenStorage
+import com.ginoskos.biblomnemon.core.auth.TokenStorage
 import com.ginoskos.biblomnemon.core.scanner.IBarcodeScanner
 import com.ginoskos.biblomnemon.core.scanner.MLKitBarcodeScanner
+import com.ginoskos.biblomnemon.core.security.ICrypto
+import com.ginoskos.biblomnemon.core.security.TinkCrypto
 import com.ginoskos.biblomnemon.data.repositories.IBooksRepository
 import com.ginoskos.biblomnemon.data.repositories.ILocalBooksRepository
 import com.ginoskos.biblomnemon.data.repositories.ILocalCategoriesRepository
 import com.ginoskos.biblomnemon.data.repositories.LocalBooksRepository
 import com.ginoskos.biblomnemon.data.repositories.LocalCategoriesRepository
 import com.ginoskos.biblomnemon.data.repositories.RemoteBooksRepository
-import com.ginoskos.biblomnemon.data.repositories.storage.database.ApplicationDatabase
-import com.ginoskos.biblomnemon.data.repositories.storage.database.DatabaseFactory
-import com.ginoskos.biblomnemon.data.repositories.storage.remote.RemoteApiFactory
-import com.ginoskos.biblomnemon.data.repositories.storage.remote.google.GoogleBooksApi
-import com.ginoskos.biblomnemon.data.repositories.storage.remote.google.GoogleBooksSource
-import com.ginoskos.biblomnemon.data.repositories.storage.remote.openlibrary.OpenLibraryApi
-import com.ginoskos.biblomnemon.data.repositories.storage.remote.openlibrary.OpenLibrarySource
+import com.ginoskos.biblomnemon.data.storage.cloud.auth.GoogleAuthManager
+import com.ginoskos.biblomnemon.data.storage.cloud.auth.GoogleAuthorizationBackend
+import com.ginoskos.biblomnemon.data.storage.cloud.auth.GoogleAuthorizationLocal
+import com.ginoskos.biblomnemon.data.storage.cloud.auth.ICloudAuthManager
+import com.ginoskos.biblomnemon.data.storage.cloud.storage.GoogleStorageManager
+import com.ginoskos.biblomnemon.data.storage.cloud.storage.ICloudStorageManager
+import com.ginoskos.biblomnemon.data.storage.database.ApplicationDatabase
+import com.ginoskos.biblomnemon.data.storage.database.DatabaseFactory
+import com.ginoskos.biblomnemon.data.storage.remote.RemoteApiFactory
+import com.ginoskos.biblomnemon.data.storage.remote.google.GoogleBooksApi
+import com.ginoskos.biblomnemon.data.storage.remote.google.GoogleBooksSource
+import com.ginoskos.biblomnemon.data.storage.remote.openlibrary.OpenLibraryApi
+import com.ginoskos.biblomnemon.data.storage.remote.openlibrary.OpenLibrarySource
 import com.ginoskos.biblomnemon.ui.screens.library.BookTransferViewModel
 import com.ginoskos.biblomnemon.ui.screens.library.CategoryManagerViewModel
 import com.ginoskos.biblomnemon.ui.screens.library.LibraryEditViewModel
 import com.ginoskos.biblomnemon.ui.screens.library.LibraryViewModel
+import com.ginoskos.biblomnemon.ui.screens.profile.ProfileViewModel
 import com.ginoskos.biblomnemon.ui.screens.scanner.ScannerViewModel
 import com.ginoskos.biblomnemon.ui.screens.search.SearchDetailViewModel
 import com.ginoskos.biblomnemon.ui.screens.search.SearchViewModel
@@ -45,8 +59,16 @@ object Modules {
             // Core dependencies
             single<ILogger> { TimberLogger }
             single<IDispatcherProvider> { AppDispatcherProvider }
+            // Settings
+            single<ISettings> { Settings(androidContext()) }
             // Barcode scanner
             single<IBarcodeScanner> { MLKitBarcodeScanner(androidContext(), get()) }
+            // Security
+            single<ICrypto> { TinkCrypto(context = androidContext(), logger = get()) }
+            single<ITokenStorage> {
+
+                TokenStorage(androidContext(), get())
+            }
         },
         module {
             single { DatabaseFactory().createRoom(androidContext(), ApplicationDatabase::class.java)}
@@ -77,7 +99,32 @@ object Modules {
             }
         },
         module {
+            single<ICloudAuthManager> { GoogleAuthManager(
+                context = androidContext(),
+                tokenStorage = get(),
+                settings = get(),
+                authorization = if (Config.GOOGLE_USE_BACKEND_AUTH) {
+                    GoogleAuthorizationBackend(get()) }
+                else {
+                    GoogleAuthorizationLocal(get())
+                },
+                webClientId = Config.GOOGLE_CLIENT_ID
+            ) }
+            single<ICloudStorageManager> {
+                GoogleStorageManager(
+                    context = androidContext(),
+                    auth = get<ICloudAuthManager>() as GoogleAuthManager,
+                    settings = get(),
+                    tokenStorage = get(),
+                    logger = get()
+                )
+            }
+        },
+        module {
             single { BookTransferViewModel(get()) }
+
+            // Profile
+            viewModel { ProfileViewModel(get(), get(), get(), get()) }
 
             // Search
             viewModel { SearchViewModel(get(), get()) }

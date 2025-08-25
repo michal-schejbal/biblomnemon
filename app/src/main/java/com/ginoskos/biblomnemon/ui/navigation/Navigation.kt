@@ -10,6 +10,7 @@ import com.ginoskos.biblomnemon.R
 import com.ginoskos.biblomnemon.ui.screens.home.HomeScreen
 import com.ginoskos.biblomnemon.ui.screens.library.LibraryEditScreen
 import com.ginoskos.biblomnemon.ui.screens.library.LibraryScreen
+import com.ginoskos.biblomnemon.ui.screens.profile.ProfileScreen
 import com.ginoskos.biblomnemon.ui.screens.scanner.ScannerScreen
 import com.ginoskos.biblomnemon.ui.screens.search.SearchDetailScreen
 import com.ginoskos.biblomnemon.ui.screens.search.SearchScreen
@@ -19,6 +20,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class NavigationRoute {
     @Serializable data object Home : NavigationRoute()
+
+    @Serializable data object Profile : NavigationRoute()
 
     @Serializable data object Scanner : NavigationRoute()
 
@@ -44,6 +47,10 @@ fun NavigationScreens() {
     NavHost(navController = navController, startDestination = NavigationRoute.Home) {
         composable<NavigationRoute.Home> {
             HomeScreen(navController)
+        }
+
+        composable<NavigationRoute.Profile> {
+            ProfileScreen(navController)
         }
 
         composable<NavigationRoute.Scanner> {

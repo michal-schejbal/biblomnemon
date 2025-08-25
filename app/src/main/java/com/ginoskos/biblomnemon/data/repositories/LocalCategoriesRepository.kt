@@ -2,10 +2,10 @@ package com.ginoskos.biblomnemon.data.repositories
 
 import com.example.nbaplayers.model.IDispatcherProvider
 import com.ginoskos.biblomnemon.data.entities.Category
-import com.ginoskos.biblomnemon.data.repositories.storage.database.categories.BookCategoryRelations
-import com.ginoskos.biblomnemon.data.repositories.storage.database.categories.CategoryDao
-import com.ginoskos.biblomnemon.data.repositories.storage.database.categories.toDomain
-import com.ginoskos.biblomnemon.data.repositories.storage.database.categories.toEntity
+import com.ginoskos.biblomnemon.data.storage.database.categories.BookCategoryRelations
+import com.ginoskos.biblomnemon.data.storage.database.categories.CategoryDao
+import com.ginoskos.biblomnemon.data.storage.database.categories.toDomain
+import com.ginoskos.biblomnemon.data.storage.database.categories.toEntity
 import kotlinx.coroutines.withContext
 
 class LocalCategoriesRepository(
@@ -31,8 +31,13 @@ class LocalCategoriesRepository(
     override suspend fun insert(item: Category): Result<Category> =
         withContext(dispatcher.io) {
             safeDbCall {
-                val id = source.insert(item.toEntity())
-                Category(id = id, title = item.title)
+                val insertion = item.copy(
+                    created = System.currentTimeMillis(),
+                    updated = System.currentTimeMillis()
+                )
+                source.insert(insertion.toEntity()).let { id ->
+                    insertion.copy(id = id)
+                }
             }
         }
 
@@ -53,7 +58,10 @@ class LocalCategoriesRepository(
     override suspend fun update(item: Category): Result<Unit> =
         withContext(dispatcher.io) {
             safeDbCall {
-                source.update(item.toEntity())
+                source.update(item
+                    .copy(updated = System.currentTimeMillis())
+                    .toEntity()
+                )
             }
         }
 

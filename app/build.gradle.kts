@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -18,6 +20,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "GOOGLE_CLIENT_ID", "\"${getCredentialProperty("client_id")}\"")
     }
 
     buildTypes {
@@ -45,6 +49,15 @@ android {
         compose = true
         buildConfig = true
     }
+
+    packaging {
+        resources {
+            excludes += setOf(
+                "META-INF/DEPENDENCIES",
+                "META-INF/INDEX.LIST"
+            )
+        }
+    }
 }
 
 dependencies {
@@ -53,6 +66,7 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
+    implementation(libs.googleid)
     testImplementation(libs.koin.test)
     testImplementation(libs.koin.test.junit4)
 
@@ -69,6 +83,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
 
     // KotlinX Serialization
     implementation(libs.kotlinx.serialization.json)
@@ -84,12 +99,25 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+    implementation(libs.datastore.preferences)
+    implementation(libs.tink.android)
 
+    // Scanner
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.mlkit.barcode.scanning)
+
+    // Auth
+    implementation(libs.google.auth)
+    implementation(libs.google.auth.coroutines)
+    implementation(libs.google.auth.oauth2)
+
+    // Google APIs
+    implementation(libs.google.api.client)
+    implementation(libs.google.api.services.drive)
+    implementation(libs.google.api.services.sheets)
 
     // Testing
     testImplementation(libs.junit)
@@ -101,4 +129,17 @@ dependencies {
     // Debug tools
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+fun getCredentialProperty(key: String): String {
+    val props = Properties()
+    val file = rootProject.file("credentials.properties")
+    if (file.exists()) {
+        props.load(file.inputStream())
+    } else {
+        throw GradleException("Missing credentials.properties file in root project.")
+    }
+
+    return props[key]?.toString()
+        ?: throw GradleException("Key '$key' not found in credentials.properties.")
 }

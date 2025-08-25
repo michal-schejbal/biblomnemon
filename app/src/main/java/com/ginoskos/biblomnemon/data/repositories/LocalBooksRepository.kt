@@ -3,11 +3,12 @@ package com.ginoskos.biblomnemon.data.repositories
 import com.example.nbaplayers.model.IDispatcherProvider
 import com.ginoskos.biblomnemon.data.entities.Book
 import com.ginoskos.biblomnemon.data.entities.BookSource
-import com.ginoskos.biblomnemon.data.repositories.storage.database.books.BookDao
-import com.ginoskos.biblomnemon.data.repositories.storage.database.books.toDomain
-import com.ginoskos.biblomnemon.data.repositories.storage.database.books.toEntity
-import com.ginoskos.biblomnemon.data.repositories.storage.database.categories.CategoryDao
-import com.ginoskos.biblomnemon.data.repositories.storage.database.categories.toDomain
+import com.ginoskos.biblomnemon.data.storage.database.books.BookDao
+import com.ginoskos.biblomnemon.data.storage.database.books.toDomain
+import com.ginoskos.biblomnemon.data.storage.database.books.toEntity
+import com.ginoskos.biblomnemon.data.storage.database.categories.CategoryDao
+import com.ginoskos.biblomnemon.data.storage.database.categories.toDomain
+import com.ginoskos.biblomnemon.data.storage.database.categories.toEntity
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
@@ -55,7 +56,7 @@ class LocalBooksRepository(
             }
         }
 
-    override suspend fun insert(item: Book): Result<Unit> =
+    override suspend fun insert(item: Book): Result<Book> =
         withContext(dispatcher.io) {
             safeDbCall {
                 val insertion = if (item.source == BookSource.MANUAL && item.id.isBlank()) {
@@ -71,6 +72,7 @@ class LocalBooksRepository(
                     )
                 }
                 sourceBooks.insert(insertion.toEntity())
+                insertion
             }
         }
 

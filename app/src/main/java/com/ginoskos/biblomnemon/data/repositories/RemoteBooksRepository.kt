@@ -3,8 +3,8 @@ package com.ginoskos.biblomnemon.data.repositories
 import com.example.nbaplayers.model.IDispatcherProvider
 import com.ginoskos.biblomnemon.data.entities.Book
 import com.ginoskos.biblomnemon.data.entities.BookSource
-import com.ginoskos.biblomnemon.data.repositories.storage.remote.google.GoogleBooksSource
-import com.ginoskos.biblomnemon.data.repositories.storage.remote.openlibrary.OpenLibrarySource
+import com.ginoskos.biblomnemon.data.storage.remote.google.GoogleBooksSource
+import com.ginoskos.biblomnemon.data.storage.remote.openlibrary.OpenLibrarySource
 import kotlinx.coroutines.withContext
 
 class RemoteBooksRepository(
