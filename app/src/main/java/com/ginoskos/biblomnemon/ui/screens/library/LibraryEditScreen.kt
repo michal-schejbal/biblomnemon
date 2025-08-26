@@ -17,8 +17,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,16 +82,20 @@ fun LibraryEditScreen(navController: NavHostController) {
     SubScreen(
         navController = navController,
         topBar = {
-            val uiState by model.uiState.collectAsStateWithLifecycle()
             ScreenToolbar(onBack = {
                 navController.navigateBack()
             }) {
-                TextButton(onClick = {
-                    model.store()
-                    navController.navigateBack()
-                }, enabled = uiState.item.title.isNotBlank()) {
-                    Text(stringResource(R.string.library_edit_save).uppercase())
-                }
+                LibraryEditTopBarActions(
+                    isSave = uiState.item.title.isNotBlank(),
+                    isEdit = uiState.isStored,
+                    onSaveClick = {
+                        model.store()
+                        navController.navigateBack()
+                    },
+                    onDeleteClick = {
+                        navController.navigateBack()
+                    }
+                )
             }
         }
     ) {
@@ -94,7 +104,6 @@ fun LibraryEditScreen(navController: NavHostController) {
             onUpdate = model::update,
             onScan = { navController.navigate(NavigationRoute.Scanner) }
         )
-
     }
 }
 
@@ -308,7 +317,77 @@ fun CategoriesFieldWithChips(
     }
 }
 
+@Composable
+fun LibraryEditTopBarActions(
+    isSave: Boolean,
+    isEdit: Boolean,
+    onSaveClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    var menuExpanded by remember { mutableStateOf(false) }
+    var showDeleteDialog by rememberSaveable { mutableStateOf(false) }
 
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        TextButton(onClick = onSaveClick, enabled = isSave) {
+            Text(stringResource(R.string.library_edit_save).uppercase())
+        }
+
+        if (isEdit) {
+            Box {
+                IconButton(onClick = { menuExpanded = true }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "More actions")
+                }
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.library_edit_delete)) },
+                        leadingIcon = {
+                            Icon(Icons.Default.Delete, contentDescription = null)
+                        },
+                        onClick = {
+                            menuExpanded = false
+                            showDeleteDialog = true
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    if (isEdit) {
+        ConfirmDeleteDialog(
+            show = showDeleteDialog,
+            onConfirm = onDeleteClick,
+            onDismiss = { showDeleteDialog = false }
+        )
+    }
+}
+
+@Composable
+fun ConfirmDeleteDialog(
+    show: Boolean,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    if (show) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stringResource(R.string.library_edit_delete_title)) },
+            text = { Text(stringResource(R.string.library_edit_delete_message)) },
+            confirmButton = {
+                TextButton(onClick = onConfirm) { Text(stringResource(R.string.library_edit_delete)) }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+            }
+        )
+    }
+}
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true, name = "Library Add Screen - Expanded")
