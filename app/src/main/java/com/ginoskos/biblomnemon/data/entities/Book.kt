@@ -11,7 +11,7 @@ enum class BookCoverCoverType {
 data class Book(
     val id: String,
     val source: BookSource = BookSource.MANUAL,
-    val title: String,
+    val title: String? = null,
     val description: String? = null,
     val authors: List<Author>? = null,
     val isbn: String? = null,   // ISBN-10 ([0-9X]{10}) or ISBN-13 ([0-9]{13})
@@ -26,7 +26,7 @@ data class Book(
 )
 
 fun Book.mergeBlankWith(other: Book): Book = copy(
-    title = title.ifBlank { other.title },
+    title = title?.ifBlank { other.title },
     description = description ?: other.description,
     authors = if (authors.isNullOrEmpty()) other.authors else authors,
     isbn = isbn ?: other.isbn,
@@ -42,8 +42,8 @@ fun Book.mergeBlankWith(other: Book): Book = copy(
 
 fun List<Book>.groupByInitialChar(): Map<Char, List<Book>> =  groupBy {
     it.title
-        .trimStart()
-        .replace(Regex("^(?i)(the|a|an)\\s+"), "")
-        .firstOrNull { ch -> ch.isLetterOrDigit() }
+        ?.trimStart()
+        ?.replace(Regex("^(?i)(the|a|an)\\s+"), "")
+        ?.firstOrNull { ch -> ch.isLetterOrDigit() }
         ?.uppercaseChar() ?: '#'
 }.toSortedMap()

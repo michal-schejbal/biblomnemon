@@ -1,35 +1,24 @@
 package com.ginoskos.biblomnemon.ui.screens.library
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -52,12 +41,13 @@ import com.ginoskos.biblomnemon.R
 import com.ginoskos.biblomnemon.core.koinSharedViewModel
 import com.ginoskos.biblomnemon.data.entities.Author
 import com.ginoskos.biblomnemon.data.entities.Book
-import com.ginoskos.biblomnemon.data.entities.Category
 import com.ginoskos.biblomnemon.ui.navigation.NavigationRoute
 import com.ginoskos.biblomnemon.ui.navigation.ObserveResult
 import com.ginoskos.biblomnemon.ui.navigation.ScreenToolbar
 import com.ginoskos.biblomnemon.ui.navigation.navigateBack
 import com.ginoskos.biblomnemon.ui.screens.SubScreen
+import com.ginoskos.biblomnemon.ui.screens.common.CategoriesSelectorField
+import com.ginoskos.biblomnemon.ui.screens.common.ClearableOutlinedTextField
 import com.ginoskos.biblomnemon.ui.screens.scanner.SCANNED_ISBN
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 import com.ginoskos.biblomnemon.ui.theme.components.LoadingComponent
@@ -86,13 +76,16 @@ fun LibraryEditScreen(navController: NavHostController) {
                 navController.navigateBack()
             }) {
                 LibraryEditTopBarActions(
-                    isSave = uiState.item.title.isNotBlank(),
+                    isSave = uiState.item.title?.isNotBlank() ?: false,
                     isEdit = uiState.isStored,
                     onSaveClick = {
                         model.store()
                         navController.navigateBack()
                     },
                     onDeleteClick = {
+                        if (uiState.isStored) {
+                            model.delete(uiState.item)
+                        }
                         navController.navigateBack()
                     }
                 )
@@ -115,7 +108,6 @@ fun LibraryEditScreenContent(
     onScan: () -> Unit = {}
 ) {
     val scroll = rememberScrollState()
-    var showCategoryManager by remember { mutableStateOf(false) }
 
     if (uiState.loading) {
         LoadingComponent(modifier = Modifier.fillMaxWidth())
@@ -129,14 +121,14 @@ fun LibraryEditScreenContent(
         with(uiState.item) {
             // Title
             ClearableOutlinedTextField(
-                value = title,
+                value = title.orEmpty(),
                 onValueChange = { onUpdate(copy(title = it)) },
                 label = stringResource(R.string.library_edit_title)
             )
 
             // Authors
             ClearableOutlinedTextField(
-                value = authors?.joinToString(", ") { it.name } ?: "",
+                value = authors.orEmpty().joinToString(", ") { it.name },
                 onValueChange = {
                     val updated = it.split(',').mapNotNull { name ->
                         name.trim().takeIf(String::isNotEmpty)?.let(::Author)
@@ -169,6 +161,7 @@ fun LibraryEditScreenContent(
                 }
             )
 
+            // Description
             ClearableOutlinedTextField(
                 value = description.orEmpty(),
                 onValueChange = { onUpdate(copy(description = it)) },
@@ -176,18 +169,21 @@ fun LibraryEditScreenContent(
                 singleLine = false
             )
 
+            // Language
             ClearableOutlinedTextField(
                 value = language.orEmpty(),
                 onValueChange = { onUpdate(copy(language = it)) },
                 label = stringResource(R.string.library_edit_language)
             )
 
+            // Publisher
             ClearableOutlinedTextField(
                 value = publisher.orEmpty(),
                 onValueChange = { onUpdate(copy(publisher = it)) },
                 label = stringResource(R.string.library_edit_publisher)
             )
 
+            // Page Count
             ClearableOutlinedTextField(
                 value = pageCount?.toString() ?: "",
                 onValueChange = {
@@ -198,121 +194,14 @@ fun LibraryEditScreenContent(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
-//            OutlinedTextField(
-//                value = categories?.joinToString(", ") { it.title } ?: "None",
-//                onValueChange = {},
-//                label = { Text("Categories") },
-//                readOnly = true,
-//                trailingIcon = {
-//                    Icon(
-//                        imageVector = Icons.Default.Edit,
-//                        contentDescription = "Edit Categories"
-//                    )
-//                },
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .clickable { showCategoryManager = true },
-//            )
-            CategoriesFieldWithChips(
+            // Categories
+            CategoriesSelectorField(
                 categories = categories.orEmpty(),
-                onEditClick = { showCategoryManager = true }
+                book = this,
+                onChanged = { selection ->
+                    onUpdate(copy(categories = selection))
+                }
             )
-
-            if (showCategoryManager) {
-                CategoryManagerBottomSheet(
-                    bookId = id,
-                    onDismiss = { selected ->
-                        onUpdate(copy(categories = selected))
-                        showCategoryManager = false
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ClearableOutlinedTextField(
-    modifier: Modifier = Modifier,
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    trailingIcon: @Composable (() -> Unit)? = null,
-    singleLine: Boolean = true
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        trailingIcon = {
-            Row {
-                if (value.isNotBlank()) {
-                    IconButton(onClick = { onValueChange("") }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Clear")
-                    }
-                }
-                trailingIcon?.invoke()
-            }
-        },
-        keyboardOptions = keyboardOptions,
-        modifier = modifier.fillMaxSize(),
-        singleLine = singleLine
-    )
-}
-
-@Composable
-fun CategoriesFieldWithChips(
-    categories: List<Category>,
-    onEditClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth(),
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp,
-        shape = MaterialTheme.shapes.small,
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-    ) {
-        Box(modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-        ) {
-            Column {
-                Text(
-                    text = stringResource(R.string.library_edit_categories),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                if (categories.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.library_edit_categories_none),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                } else {
-                    FlowRow {
-                        categories.forEach { category ->
-                            AssistChip(
-                                onClick = {},
-                                label = { Text(category.title.orEmpty()) }
-                            )
-                        }
-                    }
-                }
-            }
-
-            IconButton(
-                onClick = onEditClick,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-            ) {
-                Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.library_edit_categories_edit))
-            }
         }
     }
 }
@@ -332,7 +221,7 @@ fun LibraryEditTopBarActions(
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         TextButton(onClick = onSaveClick, enabled = isSave) {
-            Text(stringResource(R.string.library_edit_save).uppercase())
+            Text(stringResource(R.string.action_save).uppercase())
         }
 
         if (isEdit) {
@@ -345,7 +234,7 @@ fun LibraryEditTopBarActions(
                     onDismissRequest = { menuExpanded = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text(stringResource(R.string.library_edit_delete)) },
+                        text = { Text(stringResource(R.string.action_delete)) },
                         leadingIcon = {
                             Icon(Icons.Default.Delete, contentDescription = null)
                         },
@@ -380,10 +269,10 @@ fun ConfirmDeleteDialog(
             title = { Text(stringResource(R.string.library_edit_delete_title)) },
             text = { Text(stringResource(R.string.library_edit_delete_message)) },
             confirmButton = {
-                TextButton(onClick = onConfirm) { Text(stringResource(R.string.library_edit_delete)) }
+                TextButton(onClick = onConfirm) { Text(stringResource(R.string.action_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
             }
         )
     }

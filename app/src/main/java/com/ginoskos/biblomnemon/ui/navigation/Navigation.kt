@@ -7,6 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ginoskos.biblomnemon.R
+import com.ginoskos.biblomnemon.ui.screens.activity.ReadingActivityEditScreen
+import com.ginoskos.biblomnemon.ui.screens.activity.ReadingActivityScreen
 import com.ginoskos.biblomnemon.ui.screens.home.HomeScreen
 import com.ginoskos.biblomnemon.ui.screens.library.LibraryEditScreen
 import com.ginoskos.biblomnemon.ui.screens.library.LibraryScreen
@@ -30,6 +32,9 @@ sealed class NavigationRoute {
 
     @Serializable data object Search : NavigationRoute()
     @Serializable data object SearchDetail : NavigationRoute()
+    
+    @Serializable data object ReadingActivity : NavigationRoute()
+    @Serializable data object ReadingActivityEdit : NavigationRoute()
 }
 
 enum class BottomNavigationItems(
@@ -39,6 +44,7 @@ enum class BottomNavigationItems(
 ) {
     Home(NavigationRoute.Home, R.string.nav_home, R.drawable.ic_home),
     Library(NavigationRoute.Library, R.string.nav_library, R.drawable.ic_library),
+    Activity(NavigationRoute.ReadingActivity, R.string.nav_activity, R.drawable.ic_nav_activity),
 }
 
 @Composable
@@ -71,6 +77,14 @@ fun NavigationScreens() {
         }
         composable<NavigationRoute.LibraryEdit> {
             LibraryEditScreen(navController)
+        }
+
+        // Activity
+        composable<NavigationRoute.ReadingActivity> {
+            ReadingActivityScreen(navController)
+        }
+        composable<NavigationRoute.ReadingActivityEdit> {
+            ReadingActivityEditScreen(navController)
         }
 
     }

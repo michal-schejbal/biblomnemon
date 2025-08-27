@@ -1,15 +1,16 @@
 package com.ginoskos.biblomnemon.data.storage.cloud.storage
 
-import kotlin.reflect.KClass
-import kotlin.reflect.full.primaryConstructor
-import kotlin.reflect.full.memberProperties
 import androidx.room.ColumnInfo
 import com.ginoskos.biblomnemon.data.entities.Book
 import com.ginoskos.biblomnemon.data.entities.Category
+import com.ginoskos.biblomnemon.data.entities.ReadingActivity
 import com.ginoskos.biblomnemon.data.storage.database.books.BookEntity
 import com.ginoskos.biblomnemon.data.storage.database.categories.BookCategoryRelations
 import com.ginoskos.biblomnemon.data.storage.database.categories.CategoryEntity
-import kotlin.collections.emptyList
+import com.ginoskos.biblomnemon.data.storage.database.reading.ReadingActivityEntity
+import kotlin.reflect.KClass
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.javaField
 
 // Books
@@ -21,7 +22,7 @@ object BookSheet {
 fun Book.toRow(): List<Any> = listOf(
     id,
     source.name,
-    title,
+    title ?: "",
     description ?: "",
     authors?.joinToString("; ") { it.name } ?: "",
     isbn ?: "",
@@ -42,6 +43,24 @@ object CategorySheet {
 fun Category.toRow(): List<Any> = listOf(
     id ?: "",
     title ?: "",
+    created ?: "",
+    updated ?: ""
+)
+
+// Reading Activities
+object ReadingActivitySheet {
+    const val TITLE = ReadingActivityEntity.NAME
+    val headers = headersFromEntity(ReadingActivityEntity::class)
+}
+
+fun ReadingActivity.toRow(): List<Any> = listOf(
+    id ?: "",
+    book?.id ?: "",
+    title ?: "",
+    description ?: "",
+    started,
+    ended ?: "",
+    pagesRead ?: "",
     created ?: "",
     updated ?: ""
 )

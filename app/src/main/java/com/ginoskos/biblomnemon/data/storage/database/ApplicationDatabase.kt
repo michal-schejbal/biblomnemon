@@ -8,13 +8,17 @@ import com.ginoskos.biblomnemon.data.storage.database.books.BookEntity
 import com.ginoskos.biblomnemon.data.storage.database.categories.BookCategoryRelations
 import com.ginoskos.biblomnemon.data.storage.database.categories.CategoryDao
 import com.ginoskos.biblomnemon.data.storage.database.categories.CategoryEntity
+import com.ginoskos.biblomnemon.data.storage.database.reading.ReadingActivityDao
+import com.ginoskos.biblomnemon.data.storage.database.reading.ReadingActivityEntity
 
 @Database(entities = [
     BookEntity::class,
-    CategoryEntity::class, BookCategoryRelations::class
+    CategoryEntity::class, BookCategoryRelations::class,
+    ReadingActivityEntity::class
 ], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class ApplicationDatabase : RoomDatabase() {
     abstract fun bookDao(): BookDao
     abstract fun categoryDao(): CategoryDao
+    abstract fun readingActivityDao(): ReadingActivityDao
 }

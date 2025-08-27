@@ -10,7 +10,7 @@ import com.ginoskos.biblomnemon.data.entities.BookSource
 data class BookEntity(
     @PrimaryKey val id: String,
     val source: BookSource = BookSource.MANUAL,
-    val title: String,
+    val title: String?,
     val description: String?,
     val authors: List<Author>?,
     val isbn: String?,

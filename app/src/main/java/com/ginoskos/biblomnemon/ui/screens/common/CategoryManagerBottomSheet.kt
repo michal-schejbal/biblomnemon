@@ -1,4 +1,4 @@
-package com.ginoskos.biblomnemon.ui.screens.library
+package com.ginoskos.biblomnemon.ui.screens.common
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,6 +53,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ginoskos.biblomnemon.R
+import com.ginoskos.biblomnemon.data.entities.Book
 import com.ginoskos.biblomnemon.data.entities.Category
 import com.ginoskos.biblomnemon.ui.theme.BiblomnemonTheme
 import com.ginoskos.biblomnemon.ui.theme.ThemeLayout
@@ -65,7 +66,7 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryManagerBottomSheet(
-    bookId: String? = null,
+    book: Book? = null,
     onDismiss: (List<Category>) -> Unit
 ) {
     val model: CategoryManagerViewModel = koinViewModel()
@@ -76,8 +77,8 @@ fun CategoryManagerBottomSheet(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(bookId) {
-        model.fetch(bookId)
+    LaunchedEffect(book) {
+        model.fetch(book?.id)
     }
 
     LaunchedEffect(model) {
@@ -124,7 +125,7 @@ fun CategoryManagerBottomSheet(
 
                 // Selection
                 is CategoryManagerUiEvent.Select -> {
-                    model.select(event.item, bookId)
+                    model.select(event.item, book?.id)
                 }
             }
         }
@@ -255,7 +256,7 @@ fun CategoryManagerContent(
 }
 
 @Composable
-fun CategoryListItem(
+private fun CategoryListItem(
     category: Category,
     isSelected: Boolean,
     onAction: (CategoryManagerUiEvent) -> Unit
@@ -299,7 +300,7 @@ fun CategoryListItem(
                     }
                 )
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.library_edit_categories_delete_button)) },
+                    text = { Text(stringResource(R.string.action_delete)) },
                     leadingIcon = {
                         Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.library_edit_categories_delete_content_desc))
                     },
@@ -314,7 +315,7 @@ fun CategoryListItem(
 }
 
 @Composable
-fun CategoryDialogContent(
+private fun CategoryDialogContent(
     uiState: CategoryDialogState,
     onAction: (CategoryManagerUiEvent) -> Unit = {},
 ) {
@@ -385,7 +386,7 @@ private fun CategoryCreateDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
+                Text(stringResource(R.string.action_cancel))
             }
         }
     )
@@ -416,7 +417,7 @@ private fun CategoryRenameDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
+                Text(stringResource(R.string.action_cancel))
             }
         }
     )
@@ -434,12 +435,12 @@ private fun CategoryDeleteDialog(
         text = { Text(stringResource(R.string.library_edit_categories_delete_message, category.title!!)) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text(stringResource(R.string.library_edit_categories_delete_confirm))
+                Text(stringResource(R.string.action_delete))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
+                Text(stringResource(R.string.action_cancel))
             }
         }
     )

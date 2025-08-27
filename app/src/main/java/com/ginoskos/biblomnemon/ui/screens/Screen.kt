@@ -78,11 +78,13 @@ fun SubScreen(
     navController: NavHostController,
     topBar: @Composable () -> Unit = {},
     snackBar: @Composable () -> Unit = {},
+    fab: @Composable () -> Unit = {},
     content: @Composable () -> Unit
 ) {
     AppScreen(
         topBar = topBar,
         snackBar = snackBar,
+        fab = fab,
         content = { padding ->
             ScreenSurface(padding) {
                 ScreenWrapper {

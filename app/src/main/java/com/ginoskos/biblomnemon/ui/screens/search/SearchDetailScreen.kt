@@ -131,7 +131,7 @@ fun SearchDetailScreenContent(
                         .verticalScroll(scroll),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(item.title, style = MaterialTheme.typography.displayLarge)
+                    Text(item.title ?: "", style = MaterialTheme.typography.displayLarge)
                     item.authors?.takeIf { it.isNotEmpty() }?.let {
                         Text(
                             text = it.joinToString(" · ") { a -> a.name },

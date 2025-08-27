@@ -6,6 +6,7 @@ import com.ginoskos.biblomnemon.core.auth.ITokenStorage
 import com.ginoskos.biblomnemon.core.settings.ISettings
 import com.ginoskos.biblomnemon.data.repositories.ILocalBooksRepository
 import com.ginoskos.biblomnemon.data.repositories.ILocalCategoriesRepository
+import com.ginoskos.biblomnemon.data.repositories.ILocalReadingActivitiesRepository
 import com.ginoskos.biblomnemon.data.storage.cloud.auth.GoogleAuthManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.firstOrNull
@@ -21,6 +22,7 @@ class GoogleStorageManager(
 ) : ICloudStorageManager {
     private val booksRepository: ILocalBooksRepository by inject(ILocalBooksRepository::class.java)
     private val categoriesRepository: ILocalCategoriesRepository by inject(ILocalCategoriesRepository::class.java)
+    private val readingActivitiesRepository: ILocalReadingActivitiesRepository by inject(ILocalReadingActivitiesRepository::class.java)
 
     override suspend fun upload(): Result<Unit> = runCatching {
         if (!auth.isSignedIn()) {
@@ -69,6 +71,12 @@ class GoogleStorageManager(
         val categoryRows = categories.map { it.toRow() }
         sheets.update(spreadsheetId, CategorySheet.TITLE, CategorySheet.headers, categoryRows)
         logger.d("Categories exported: %d", categoryRows.size)
+
+        // Reading Activities Tab
+        val readingActivities = readingActivitiesRepository.fetch().getOrThrow()
+        val readingActivityRows = readingActivities.map { it.toRow() }
+        sheets.update(spreadsheetId, ReadingActivitySheet.TITLE, ReadingActivitySheet.headers, readingActivityRows)
+        logger.d("Reading Activities exported: %d", readingActivityRows.size)
 
         // Book + Categories Relations Tab
         val relationRows = buildList {

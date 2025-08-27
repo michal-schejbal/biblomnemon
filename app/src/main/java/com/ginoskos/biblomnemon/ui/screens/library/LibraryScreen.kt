@@ -39,6 +39,15 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LibraryScreen(navController: NavHostController) {
+    val model: LibraryViewModel = koinViewModel()
+    val uiState by model.uiState.collectAsStateWithLifecycle()
+    val transfer: BookTransferViewModel = koinViewModel()
+    val query by model.query.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        model.fetch()
+    }
+
     MainScreen(
         navController = navController,
         title = stringResource(id = R.string.nav_library),
@@ -57,15 +66,6 @@ fun LibraryScreen(navController: NavHostController) {
             }
         }
     ) {
-        val model: LibraryViewModel = koinViewModel()
-        val uiState by model.uiState.collectAsStateWithLifecycle()
-        val transfer: BookTransferViewModel = koinViewModel()
-        val query by model.query.collectAsStateWithLifecycle()
-
-        LaunchedEffect(Unit) {
-            model.fetch()
-        }
-
         LibraryScreenContent(
             uiState = uiState,
             query = query,
@@ -185,7 +185,7 @@ fun LibraryScreenPreview() {
         LibraryScreenContent(
             uiState = LibraryUiState.Success(
                 items = items
-                    .groupBy { it.title.first().uppercaseChar() }
+                    .groupBy { it.title!!.first().uppercaseChar() }
                     .toSortedMap()
             ),
             query = "physics"

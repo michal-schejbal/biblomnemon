@@ -1,4 +1,4 @@
-package com.ginoskos.biblomnemon.ui.screens.library
+package com.ginoskos.biblomnemon.ui.screens.common
 
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel

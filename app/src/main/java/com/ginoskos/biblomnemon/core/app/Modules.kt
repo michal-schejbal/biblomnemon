@@ -5,19 +5,21 @@ import com.example.nbaplayers.app.logger.TimberLogger
 import com.example.nbaplayers.model.AppDispatcherProvider
 import com.example.nbaplayers.model.IDispatcherProvider
 import com.ginoskos.biblomnemon.core.Config
-import com.ginoskos.biblomnemon.core.settings.ISettings
-import com.ginoskos.biblomnemon.core.settings.Settings
 import com.ginoskos.biblomnemon.core.auth.ITokenStorage
 import com.ginoskos.biblomnemon.core.auth.TokenStorage
 import com.ginoskos.biblomnemon.core.scanner.IBarcodeScanner
 import com.ginoskos.biblomnemon.core.scanner.MLKitBarcodeScanner
 import com.ginoskos.biblomnemon.core.security.ICrypto
 import com.ginoskos.biblomnemon.core.security.TinkCrypto
+import com.ginoskos.biblomnemon.core.settings.ISettings
+import com.ginoskos.biblomnemon.core.settings.Settings
 import com.ginoskos.biblomnemon.data.repositories.IBooksRepository
 import com.ginoskos.biblomnemon.data.repositories.ILocalBooksRepository
 import com.ginoskos.biblomnemon.data.repositories.ILocalCategoriesRepository
+import com.ginoskos.biblomnemon.data.repositories.ILocalReadingActivitiesRepository
 import com.ginoskos.biblomnemon.data.repositories.LocalBooksRepository
 import com.ginoskos.biblomnemon.data.repositories.LocalCategoriesRepository
+import com.ginoskos.biblomnemon.data.repositories.LocalReadingActivitiesRepository
 import com.ginoskos.biblomnemon.data.repositories.RemoteBooksRepository
 import com.ginoskos.biblomnemon.data.storage.cloud.auth.GoogleAuthManager
 import com.ginoskos.biblomnemon.data.storage.cloud.auth.GoogleAuthorizationBackend
@@ -32,8 +34,12 @@ import com.ginoskos.biblomnemon.data.storage.remote.google.GoogleBooksApi
 import com.ginoskos.biblomnemon.data.storage.remote.google.GoogleBooksSource
 import com.ginoskos.biblomnemon.data.storage.remote.openlibrary.OpenLibraryApi
 import com.ginoskos.biblomnemon.data.storage.remote.openlibrary.OpenLibrarySource
+import com.ginoskos.biblomnemon.ui.screens.activity.ReadingActivityEditViewModel
+import com.ginoskos.biblomnemon.ui.screens.activity.ReadingActivityTransferViewModel
+import com.ginoskos.biblomnemon.ui.screens.activity.ReadingActivityViewModel
+import com.ginoskos.biblomnemon.ui.screens.common.BookPickerViewModel
+import com.ginoskos.biblomnemon.ui.screens.common.CategoryManagerViewModel
 import com.ginoskos.biblomnemon.ui.screens.library.BookTransferViewModel
-import com.ginoskos.biblomnemon.ui.screens.library.CategoryManagerViewModel
 import com.ginoskos.biblomnemon.ui.screens.library.LibraryEditViewModel
 import com.ginoskos.biblomnemon.ui.screens.library.LibraryViewModel
 import com.ginoskos.biblomnemon.ui.screens.profile.ProfileViewModel
@@ -74,9 +80,11 @@ object Modules {
             single { DatabaseFactory().createRoom(androidContext(), ApplicationDatabase::class.java)}
             single { get<ApplicationDatabase>().bookDao() }
             single { get<ApplicationDatabase>().categoryDao() }
+            single { get<ApplicationDatabase>().readingActivityDao() }
 
             single<ILocalBooksRepository> { LocalBooksRepository(get(), get(),get()) }
             single<ILocalCategoriesRepository> { LocalCategoriesRepository(get(), get()) }
+            single<ILocalReadingActivitiesRepository> { LocalReadingActivitiesRepository(get(), get()) }
         },
         module {
             factory<GoogleBooksApi> { RemoteApiFactory().createGoogleBooksApi() }
@@ -122,6 +130,7 @@ object Modules {
         },
         module {
             single { BookTransferViewModel(get()) }
+            single { ReadingActivityTransferViewModel(get()) }
 
             // Profile
             viewModel { ProfileViewModel(get(), get(), get(), get()) }
@@ -137,6 +146,11 @@ object Modules {
 
             // Scan
             viewModel { ScannerViewModel(get(), get()) }
+
+            // Activity
+            viewModel { ReadingActivityViewModel(get(), get()) }
+            viewModel { ReadingActivityEditViewModel(get(), get()) }
+            viewModel { BookPickerViewModel(get(), get()) }
         }
     )
 }

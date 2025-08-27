@@ -1,12 +1,18 @@
 <resources>
     <string name="app_name">Biblomnemon</string>
 
-    <string name="cancel">Cancel</string>
+    <!-- Actions -->
+    <string name="action_save">Save</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_more">More</string>
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
     <string name="nav_library">Library</string>
     <string name="nav_search">Search</string>
+    <string name="nav_activity">Reading Activity</string>
 
     <!-- HomeScreen -->
     <string name="home_welcome_title">Welcome to %1$s!</string>
@@ -36,9 +42,7 @@
     <string name="scan_permission_button">Grant Camera Permission</string>
     <string name="scan_align_barcode">Align the barcode within the frame</string>
 
-    <!-- Library -->
-    <string name="library_edit_save">Save</string>
-    <string name="library_edit_delete">Delete</string>
+    <!-- LibraryScreen -->
     <string name="library_edit_delete_title">Delete book</string>
     <string name="library_edit_delete_message">Are you sure you want to delete the book?</string>
     <string name="library_edit_title">Title</string>
@@ -73,15 +77,31 @@
     <string name="library_edit_categories_rename_success">Category renamed</string>
     <string name="library_edit_categories_rename_failure">Failed to rename category</string>
 
-    <string name="library_edit_categories_delete_button">Delete</string>
     <string name="library_edit_categories_delete_content_desc">Delete category</string>
     <string name="library_edit_categories_delete_title">Delete Category</string>
     <string name="library_edit_categories_delete_message">Are you sure you want to delete \'%1$s\'?</string>
-    <string name="library_edit_categories_delete_confirm">Delete</string>
     <string name="library_edit_categories_delete_success">Category deleted</string>
     <string name="library_edit_categories_delete_failure">Failed to delete category</string>
 
     <string name="library_edit_categories_selection_success">Category selection updated</string>
     <string name="library_edit_categories_selection_failure">Failed to update category selection</string>
+
+    <!-- Reading Activity -->
+    <string name="reading_activity_title">Reading Activity</string>
+    <string name="reading_activity_empty_title">No reading activity logged yet</string>
+    <string name="reading_activity_log_first">Log first session</string>
+    <string name="reading_activity_item_default_title">Reading session</string>
+    <string name="reading_activity_pages_read">%1$d pages</string>
+    <string name="reading_activity_delete_title">Delete reading activity</string>
+    <string name="reading_activity_delete_message">Are you sure you want to delete this reading activity?</string>
+    <string name="reading_activity_add_title">Log reading session</string>
+    <string name="reading_activity_book_id">Book</string>
+    <string name="reading_activity_description">Description</string>
+    <string name="reading_activity_pages_read_label">Pages read</string>
+    <string name="reading_activity_started">Started at</string>
+    <string name="reading_activity_ended">Ended at</string>
+    <string name="reading_activity_clear_book">Clear book selection</string>
+    <string name="reading_activity_select_time">Select Time</string>
+
 
 </resources>

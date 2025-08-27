@@ -42,7 +42,7 @@ fun BookListItem(item: Book, onClick: () -> Unit = {}) {
             Spacer(modifier = Modifier.width(12.dp))
 
             Column {
-                Text(item.title, style = MaterialTheme.typography.bodyLarge)
+                Text(item.title!!, style = MaterialTheme.typography.bodyLarge)
                 item.authors?.let {
                     Text(
                         text = item.authors.joinToString(separator = " · ") { it.name },

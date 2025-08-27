@@ -10,6 +10,8 @@ class DatabaseFactory {
             context,
             klass,
             "${klass.simpleName.lowercase().replace("database", "-database")}.db"
-        ).build()
+        ).apply {
+//            addMigrations()
+        }.build()
     }
 }
